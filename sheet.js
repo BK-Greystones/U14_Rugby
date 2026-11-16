@@ -1,6 +1,7 @@
 import { $, h, fill } from './dom.js';
 import { POSITIONS, emptySheet, hasLegacySheet, takeLegacySheet } from './vault.js';
-import { name, score, count, fmtDate } from './model.js';
+import { name, score, count, fmtDate, LABEL, PTS } from './model.js';
+import { pdfRows, parseSheet } from './pdfimport.js';
 
 const SIGN = ['Club Team Coach', 'Opposing Team Coach', 'Referee'];
 let ctx, saveTimer = null;
@@ -29,10 +30,10 @@ export function initSheet(c) {
     ctx.vault().data[g][+t.dataset.i][t.dataset.k] = t.value;
     queueSave();
   });
-  $('sh-imp').addEventListener('click', importPasted);
+  $('sh-file').addEventListener('change', importPdf);
   $('sh-save').addEventListener('click', savePdf);
   $('sh-clr').addEventListener('click', () => ctx.ask('Clear all three signatures?', 'Clear signatures', () => {
-    ctx.vault().data.sig = [null, null, null]; queueSave(); sigInit();
+    const d = ctx.vault().data; d.sig = [null, null, null]; d.sigAt = [0, 0, 0]; queueSave(); sigInit();
   }));
   buildSigPads();
   addEventListener('pagehide', flush);
@@ -130,8 +131,11 @@ export function sheetTeam() { const d = ctx.vault().data; return d ? d.team : ''
 /* ---------- signatures ---------- */
 function buildSigPads() {
   fill('sh-sig', SIGN.map((n, i) => h('div', { class: 'sigb' },
-    h('div', { class: 'row' }, h('span', { id: 'sgl' + i, text: n }), h('button', { text: 'Clear', 'aria-label': 'Clear ' + n + ' signature', onclick: () => { ctx.vault().data.sig[i] = null; queueSave(); sigInit(); } })),
-    h('canvas', { id: 'sg' + i, role: 'img', 'aria-labelledby': 'sgl' + i })
+    h('div', { class: 'row' }, h('span', { id: 'sgl' + i, text: n }), h('button', { text: 'Clear', 'aria-label': 'Clear ' + n + ' signature', onclick: () => { const d = ctx.vault().data; d.sig[i] = null; d.sigAt[i] = 0; queueSave(); sigInit(); } })),
+    h('canvas', { id: 'sg' + i, role: 'img', 'aria-labelledby': 'sgl' + i }),
+    h('div', { class: 'when', id: 'sgw' + i }),
+    h('div', { class: 'signame' }, h('input', { id: 'sgn' + i, placeholder: 'Name in capitals', 'aria-label': n + ' name', maxlength: '40', autocomplete: 'off',
+      oninput: (e) => { ctx.vault().data.sigName[i] = e.target.value.slice(0, 40); queueSave(); } }))
   )));
   [0, 1, 2].forEach((i) => {
     const c = $('sg' + i); let on = false, lx = 0, ly = 0;
@@ -140,13 +144,19 @@ function buildSigPads() {
       if (!on) return; const r = c.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, g = c.getContext('2d');
       g.beginPath(); g.moveTo(lx, ly); g.lineTo(x, y); g.stroke(); lx = x; ly = y; e.preventDefault();
     });
-    const end = () => { if (!on) return; on = false; if (ctx.vault().data) { ctx.vault().data.sig[i] = c.toDataURL('image/png'); queueSave(); } };
+    const end = () => {
+      if (!on) return; on = false; const d = ctx.vault().data; if (!d) return;
+      d.sig[i] = c.toDataURL('image/png'); d.sigAt[i] = Date.now(); queueSave(); sigWhen(i);
+    };
     c.addEventListener('pointerup', end); c.addEventListener('pointercancel', end);
   });
 }
+const stamp = (t) => new Date(t).toLocaleString('en-IE', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+function sigWhen(i) { const d = ctx.vault().data; $('sgw' + i).textContent = d && d.sig[i] && d.sigAt[i] ? 'Signed ' + stamp(d.sigAt[i]) : 'Not signed yet'; }
 export function sigInit() {
   const d = ctx.vault().data; if (!d) return;
   for (let i = 0; i < 3; i++) {
+    $('sgn' + i).value = d.sigName[i] || ''; sigWhen(i);
     const c = $('sg' + i), dpr = devicePixelRatio || 1, w = c.clientWidth; if (!w) continue;
     c.width = Math.round(w * dpr); c.height = Math.round(110 * dpr);
     const g = c.getContext('2d'); g.scale(dpr, dpr); g.lineWidth = 2.4; g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = '#000';
@@ -154,112 +164,143 @@ export function sigInit() {
   }
 }
 
-/* ---------- import from pasted text ---------- */
-const isoDate = (d) => { const q = (d || '').match(/(\d{2})\/(\d{2})\/(\d{4})/); return q ? q[3] + '-' + q[2] + '-' + q[1] : ''; };
-function rowParse(line, off) {
-  const flat = line.replace(/\t+/g, ' ').replace(/\s+/g, ' ').trim();
-  const pm = flat.match(/^(\d{1,2})\b/), dm = flat.match(/\b(\d{2}\/\d{2}\/\d{4})\b/), im = flat.match(/\b(\d{8})\b/);
-  if (!pm || !dm) return null;
-  const cells = line.split('\t').map((c) => c.trim());
-  let r, f, sn, sc;
-  if (cells.length >= 6) {
-    let stop = cells.length;
-    cells.forEach((c, i) => { if ((/^\d{8}$/.test(c) || /^\d{2}\/\d{2}\/\d{4}$/.test(c)) && i < stop) stop = i; });
-    const mid = cells.slice(1, stop); while (mid.length < 4) mid.push('');
-    [r, f, sn, sc] = mid;
-  } else {
-    let t = flat.slice(pm[0].length, Math.min(dm.index, im ? im.index : 1e9)).trim();
-    r = ''; sc = '';
-    if (off) { const k = t.match(/^(Team Manager|Medic|Lead\/Head Coach|Head Coach|Lead Coach|Forwards Coach|Backs Coach|Defence Coach|Scrum Coach|Coach|Manager|Physio)\s+/i); if (k) { r = k[1]; t = t.slice(k[0].length); } }
-    const tk = t.split(' ');
-    if (!off) while (tk.length && /^(FR|H|P|Captain|Capt\.?)$/i.test(tk[0])) r += (r ? ' ' : '') + tk.shift();
-    f = tk.shift() || ''; sn = tk.join(' ');
-  }
-  return { pos: +pm[1], r, f, s: sn, sc, id: im ? im[1] : '', dob: dm[1] };
-}
-function importPasted() {
-  const raw = $('sh-paste').value.slice(0, 50000), out = $('sh-imsg'), d = ctx.vault().data;
-  if (!raw.trim()) { out.textContent = 'Paste the team sheet text into the box first.'; return; }
-  const flat = raw.replace(/\s+/g, ' ');
-  const field = (l) => { const q = flat.match(new RegExp(l + '\\s*(.*?)\\s+(?:Competition:|Fixture:|Date:|KO Time:|Venue:|Team:|Pos\\.|FR H)')); return q ? q[1].trim() : ''; };
-  const fx = flat.match(/Fixture:\s*(.*?)\s+V\s+(.*?)\s+(?:Date:|KO Time:|Venue:|Team:|Pos\.)/);
-  const oi = raw.search(/OFFICIALS/i), pt = oi < 0 ? raw : raw.slice(0, oi), ot = oi < 0 ? '' : raw.slice(oi);
-  let np = 0, no = 0;
-  pt.split(/\r?\n/).forEach((l) => { const q = rowParse(l, false); if (!q) return; const ix = POSITIONS.indexOf(q.pos); if (ix < 0) return; d.pl[ix] = { r: q.r, f: q.f, s: q.s, sc: q.sc, id: q.id, dob: q.dob }; np++; });
-  ot.split(/\r?\n/).forEach((l) => { const q = rowParse(l, true); if (!q || q.pos < 1 || q.pos > 8) return; d.of[q.pos - 1] = { r: q.r || d.of[q.pos - 1].r, f: q.f, s: q.s, id: q.id, dob: q.dob }; no++; });
-  const team = field('Team:'); if (team) d.team = team.slice(0, 60);
-  const extra = fx ? ctx.applyDetails({ home: fx[1].trim(), away: fx[2].trim(), date: isoDate(field('Date:')), ko: field('KO Time:'), venue: field('Venue:') }) : '';
-  ctx.vault().save(); buildTables(); shRes();
-  $('sh-paste').value = '';
-  out.textContent = np || no
-    ? 'Imported ' + np + ' players and ' + no + ' officials.' + extra + ' Check the names, IDs and dates of birth against the original.'
-    : 'No player rows found. The text may have copied column by column. Copy from the web version of the sheet, or type the players in.';
+/* ---------- import from an uploaded PDF (read on this device only) ---------- */
+async function importPdf(e) {
+  const file = e.target.files && e.target.files[0], out = $('sh-imsg');
+  e.target.value = '';
+  if (!file) return;
+  if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') { out.textContent = 'That file is not a PDF. Choose the team sheet PDF downloaded from the IRFU site.'; return; }
+  if (file.size > 20e6) { out.textContent = 'That PDF is too large to be a team sheet (over 20 MB).'; return; }
+  const filled = ctx.vault().data.pl.some((p) => p.f || p.s);
+  const go = async () => {
+    out.textContent = 'Reading the team sheet…'; $('sh-file').disabled = true;
+    let res;
+    try { res = parseSheet(await pdfRows(file)); }
+    catch (err) {
+      out.textContent = err && err.name === 'PasswordException'
+        ? 'This PDF is password-protected. Download an unprotected copy, or type the players in.'
+        : 'Could not read this PDF. Check it opens normally on your phone, or type the players in.';
+      return;
+    } finally { $('sh-file').disabled = false; }
+    if (res.chars < 20) { out.textContent = 'This PDF has no readable text. It is probably a scan or a photo. Download the team sheet as a PDF from the IRFU site, or type the players in.'; return; }
+    const d = ctx.vault().data, blank = emptySheet();
+    if (res.players.length) d.pl = blank.pl;
+    if (res.officials.length) d.of = blank.of;
+    res.players.forEach((q) => { const ix = POSITIONS.indexOf(q.pos); if (ix >= 0) d.pl[ix] = { r: q.r.slice(0, 20), f: q.f.slice(0, 40), s: q.s.slice(0, 40), sc: q.sc.slice(0, 60), id: q.id, dob: q.dob }; });
+    res.officials.forEach((q) => { d.of[q.pos - 1] = { r: (q.r || d.of[q.pos - 1].r).slice(0, 40), f: q.f.slice(0, 40), s: q.s.slice(0, 40), id: q.id, dob: q.dob }; });
+    const f = res.fields;
+    if (f.team) d.team = f.team.slice(0, 60);
+    const extra = f.home && f.away ? ctx.applyDetails(f) : '';
+    ctx.vault().save(); buildTables(); shRes();
+    out.textContent = res.players.length || res.officials.length
+      ? 'Read ' + res.players.length + ' players and ' + res.officials.length + ' officials from ' + file.name + '.' + extra + ' Check every name, IRFU ID and date of birth against the PDF.'
+      : 'No player rows were found in this PDF. If it is the IRFU team sheet, tell the site owner so the reader can be adjusted. You can type the players in meanwhile.';
+  };
+  if (filled) ctx.ask('The sheet already has players on it. Replace them with the players in ' + file.name + '?', 'Replace players', go);
+  else go();
 }
 
-/* ---------- PDF ---------- */
+/* ---------- signed team sheet PDF ---------- */
 function loadJsPdf() {
   if (window.jspdf) return Promise.resolve();
   return new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'jspdf.umd.min.js'; s.onload = res; s.onerror = rej; document.head.append(s); });
 }
-async function renderCanvas() {
+async function buildPdf() {
+  await loadJsPdf();
   const m = ctx.match(), d = ctx.vault().data;
-  const W = 1240, H = 1754, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
-  g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
-  const T = (v, x, y, f, a, mw) => { g.font = f || '16px Arial'; g.textAlign = a || 'left'; g.fillStyle = '#000'; v = v == null ? '' : String(v); mw ? g.fillText(v, x, y, mw) : g.fillText(v, x, y); };
-  const grid = (x, y, w, hd, rows, rh) => {
-    const tw = w.reduce((a, b) => a + b, 0), all = (hd ? [hd] : []).concat(rows); let yy = y;
+  const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4' });
+  const PW = 595.28, PH = 841.89, L = 32, W = PW - 2 * L, RH = 12.5, GREEN = [13, 59, 30], LIGHT = [223, 241, 223];
+  let y = 40;
+  const font = (sz, bold) => { doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.setFontSize(sz); };
+  const fit = (v, w) => { v = v == null ? '' : String(v); if (doc.getTextWidth(v) <= w) return v; while (v && doc.getTextWidth(v + '…') > w) v = v.slice(0, -1); return v + '…'; };
+  const room = (need) => { if (y + need > PH - 40) { doc.addPage(); y = 40; } };
+  const table = (widths, head, rows, opts = {}) => {
+    const tw = widths.reduce((a, b) => a + b, 0), all = (head ? [head] : []).concat(rows);
+    room(all.length * RH + 4);
     all.forEach((r, ri) => {
-      const isH = hd && ri === 0;
-      if (!isH && ri % 2 === 0) { g.fillStyle = '#f2f2f2'; g.fillRect(x, yy, tw, rh); }
-      let cx = x; r.forEach((v, ci) => { T(v, cx + 8, yy + rh - 8, (isH ? 'bold ' : '') + '16px Arial', 'left', w[ci] - 12); cx += w[ci]; });
-      yy += rh;
+      const isH = head && ri === 0;
+      if (isH) { doc.setFillColor(...LIGHT); doc.rect(L, y, tw, RH, 'F'); }
+      let x = L;
+      r.forEach((v, ci) => { font(8, isH || (opts.boldCol === ci)); doc.setTextColor(isH ? GREEN[0] : 0, isH ? GREEN[1] : 0, isH ? GREEN[2] : 0); doc.text(fit(v, widths[ci] - 6), x + 3, y + RH - 3.6); x += widths[ci]; });
+      y += RH;
     });
-    g.strokeStyle = '#aaa'; g.lineWidth = 1; g.strokeRect(x, y, tw, all.length * rh);
-    let cx = x; w.forEach((v) => { cx += v; g.beginPath(); g.moveTo(cx, y); g.lineTo(cx, yy); g.stroke(); });
-    return yy;
+    doc.setDrawColor(170, 190, 172); doc.setLineWidth(0.5);
+    const top = y - all.length * RH;
+    for (let i = 0; i <= all.length; i++) doc.line(L, top + i * RH, L + tw, top + i * RH);
+    let x = L; doc.line(x, top, x, y); widths.forEach((w) => { x += w; doc.line(x, top, x, y); });
+    doc.setTextColor(0, 0, 0);
   };
-  const B = 'bold 16px Arial', dnum = (s) => { const p = (s || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : ''; };
-  T('Youth Competition Team Sheet', W / 2, 60, 'bold 28px Arial', 'center');
-  g.strokeStyle = '#999'; g.strokeRect(50, 85, 1140, 90);
-  T('Competition:', 60, 112, B); T(m.comp, 190, 112, null, null, 240); T('Fixture:', 440, 112, B); T(name(m, 0), 560, 112, null, null, 220); T('V', 790, 112, B); T(name(m, 1), 860, 112, null, null, 320);
-  T('Date:', 60, 138, B); T(dnum(m.date), 190, 138); T('KO Time:', 440, 138, B); T(m.ko, 560, 138); T('Venue:', 790, 138, B); T(m.venue, 860, 138, null, null, 320);
-  T('Team:', 60, 164, B); T(d.team || ctx.defTeam(), 190, 164, null, null, 600);
-  const cw = [60, 110, 210, 220, 230, 160, 150];
-  let y = grid(50, 195, cw, ['Pos.', 'FR H or P', 'First Name', 'Surname', 'School', 'IRFU ID', 'DOB'], POSITIONS.map((p, i) => { const r = d.pl[i]; return [p, r.r, r.f, r.s, r.sc, r.id, r.dob]; }), 26);
-  T('OFFICIALS', 50, y + 34, 'bold 18px Arial');
-  y = grid(50, y + 48, cw, null, d.of.map((r, i) => [i + 1, r.r, r.f, r.s, '', r.id, r.dob]), 26);
+  const label = (t) => { room(22); y += 12; font(10, true); doc.setTextColor(...GREEN); doc.text(t, L, y); doc.setTextColor(0, 0, 0); y += 5; };
+  const dmy = (s) => { const p = (s || '').split('-'); return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : ''; };
+
+  // Title and match details
+  font(16, true); doc.setTextColor(...GREEN); doc.text('Youth Competition Team Sheet', PW / 2, y, { align: 'center' }); y += 12;
+  doc.setDrawColor(...GREEN); doc.setLineWidth(1); doc.line(L, y, L + W, y); y += 14;
+  const kv = (k, v, x, w) => { font(8.5, true); doc.text(k, x, y); const kw = doc.getTextWidth(k); font(8.5); doc.text(fit(v, w - kw), x + kw + 4, y); };
+  kv('Competition:', m.comp, L, 200); kv('Fixture:', name(m, 0) + '  V  ' + name(m, 1), L + 260, 230); y += 13;
+  kv('Date:', dmy(m.date), L, 120); kv('KO Time:', m.ko, L + 130, 60); kv('Venue:', m.venue, L + 260, 230); y += 13;
+  kv('Team:', d.team || ctx.defTeam(), L, 400); y += 8;
+
+  label('Players');
+  table([30, 46, 86, 96, 124, 74, 75.28], ['Pos.', 'FR H or P', 'First Name', 'Surname', 'School', 'IRFU ID', 'DOB'],
+    POSITIONS.map((p, i) => { const r = d.pl[i]; return [p, r.r, r.f, r.s, r.sc, r.id, r.dob]; }));
+  label('Officials');
+  table([30, 136, 96, 110, 80, 79.28], ['#', 'Role', 'First Name', 'Surname', 'IRFU ID', 'DOB'], d.of.map((r, i) => [i + 1, r.r, r.f, r.s, r.id, r.dob]));
+  label('Match result');
+  table([191.28, 60, 60, 75, 75, 70], ['Team', 'Points', 'Tries', 'Conversions', 'Penalty Goals', 'Drop Goals'],
+    [0, 1].map((t) => [name(m, t), score(m, t), count(m, t, 'try') + count(m, t, 'pentry'), count(m, t, 'con'), count(m, t, 'pen'), count(m, t, 'drop')]), { boldCol: 1 });
+  label('Red and yellow cards');
+  table([95, 122, 48.64, 95, 122, 48.64], ['Red card: player', 'Offence', 'Law', 'Yellow card: player', 'Offence', 'Law'],
+    d.cd.map((r) => [r.rp, r.ro, r.rl, r.yp, r.yo, r.yl]));
+
+  // Signatures
+  label('Signatures'); room(92); y += 4;
   const imgs = await Promise.all(d.sig.map((v) => new Promise((r) => { if (!v) return r(null); const im = new Image(); im.onload = () => r(im); im.onerror = () => r(null); im.src = v; })));
-  y += 40;
+  const cw = W / 3;
   SIGN.forEach((n, i) => {
-    const x = 50 + i * 400; T('Signed:', x, y + 20);
-    if (imgs[i]) { const hh = 70, ww = Math.min(260, imgs[i].width / imgs[i].height * hh); g.drawImage(imgs[i], x + 80, y - 10, ww, hh); }
-    g.strokeStyle = '#999'; g.beginPath(); g.moveTo(x + 80, y + 30); g.lineTo(x + 340, y + 30); g.stroke();
-    T(n, x, y + 60);
+    const x = L + i * cw;
+    if (imgs[i]) { const hh = 46, ww = Math.min(cw - 16, imgs[i].width / imgs[i].height * hh); doc.addImage(d.sig[i], 'PNG', x, y, ww, hh); }
+    doc.setDrawColor(120, 140, 125); doc.setLineWidth(0.6); doc.line(x, y + 50, x + cw - 16, y + 50);
+    font(8, true); doc.text(n, x, y + 61);
+    font(8); doc.text(fit(d.sigName[i] || '', cw - 16), x, y + 72);
+    doc.setTextColor(90, 110, 95); doc.text(d.sig[i] && d.sigAt[i] ? 'Signed ' + stamp(d.sigAt[i]) : 'Not signed', x, y + 83); doc.setTextColor(0, 0, 0);
   });
-  y += 100;
-  y = grid(50, y, [400, 140, 140, 160, 160, 140], ['Team', 'Points', 'Tries', 'Conversions', 'Penalty Goals', 'Drop Goals'],
-    [0, 1].map((t) => [name(m, t), score(m, t), count(m, t, 'try') + count(m, t, 'pentry'), count(m, t, 'con'), count(m, t, 'pen'), count(m, t, 'drop')]), 26);
-  y = grid(50, y + 30, [260, 200, 110, 260, 200, 110], ['Red Card', '', '', 'Yellow Card', '', ''],
-    [['Player', 'Offence', 'Law', 'Player', 'Offence', 'Law']].concat(d.cd.map((r) => [r.rp, r.ro, r.rl, r.yp, r.yo, r.yl])), 26);
-  T('Date and Time', 50, y + 50, 'bold 22px Arial'); T('Printed', 50, y + 80, '14px Arial'); T(new Date().toLocaleString('en-IE'), 400, y + 80, '14px Arial');
-  return c;
+  y += 92;
+
+  // Match log (page 2) – the scoring detail behind the result
+  if (m.ev.length) {
+    doc.addPage(); y = 40;
+    font(13, true); doc.setTextColor(...GREEN); doc.text('Match log: ' + name(m, 0) + ' ' + score(m, 0) + ' – ' + score(m, 1) + ' ' + name(m, 1), L, y); doc.setTextColor(0, 0, 0); y += 10;
+    const our = ctx.ourSide ? ctx.ourSide() : -1;
+    table([50, 200, 200, 81.28], ['Minute', 'Team', 'Event', 'Points'], m.ev.map((e) => {
+      const who = e.no && e.t === our ? playerName(e.no) : '';
+      return [e.m + "'", e.t === 2 ? '' : name(m, e.t), LABEL[e.k] + (e.no ? ' #' + e.no : '') + (who ? ' (' + who + ')' : ''), PTS[e.k] ? '+' + PTS[e.k] : ''];
+    }));
+  }
+  // Footer on every page
+  const pages = doc.getNumberOfPages(), made = stamp(Date.now());
+  for (let p = 1; p <= pages; p++) {
+    doc.setPage(p); font(7); doc.setTextColor(100, 120, 105);
+    doc.text('Created ' + made + ' with the Greystones RFC U14 match tracker. Signatures are drawn on screen and are a record of agreement, not a certified electronic signature.', L, PH - 22, { maxWidth: W });
+    doc.text('Page ' + p + ' of ' + pages, PW - L, PH - 12, { align: 'right' });
+  }
+  return doc;
 }
 async function savePdf() {
-  const msg = $('sh-msg'), m = ctx.match(); msg.textContent = 'Preparing the team sheet…';
-  try {
-    flush();
-    const c = await renderCanvas();
-    const slug = (s) => s.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
-    let fn = 'team-sheet-' + (m.date || 'game') + '-' + slug(name(m, 0)) + '-v-' + slug(name(m, 1)), blob;
+  const msg = $('sh-msg'), m = ctx.match(), d = ctx.vault().data;
+  const missing = SIGN.filter((n, i) => !d.sig[i]);
+  const go = async () => {
+    msg.textContent = 'Creating the signed team sheet…';
     try {
-      await loadJsPdf();
-      const pdf = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4' });
-      pdf.addImage(c.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 595.28, 841.89);
-      blob = pdf.output('blob'); fn += '.pdf';
-    } catch { blob = await new Promise((r) => c.toBlob(r, 'image/png')); fn += '.png'; }
-    const a = h('a', { href: URL.createObjectURL(blob), download: fn });
-    document.body.append(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
-    msg.textContent = 'Saved ' + fn + '. It contains player details, so store and share it carefully.';
-  } catch { msg.textContent = 'Could not create the team sheet. Try again.'; }
+      flush();
+      const doc = await buildPdf();
+      const slug = (s) => s.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
+      const fn = 'team-sheet-' + (m.date || 'game') + '-' + slug(name(m, 0)) + '-v-' + slug(name(m, 1)) + '.pdf';
+      const a = h('a', { href: URL.createObjectURL(doc.output('blob')), download: fn });
+      document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+      msg.textContent = 'Saved ' + fn + '. It contains player details, so store and share it carefully.';
+    } catch { msg.textContent = 'Could not create the team sheet. Try again.'; }
+  };
+  if (missing.length) ctx.ask('Not signed yet: ' + missing.join(', ') + '.\n\nCreate the PDF anyway?', 'Create PDF', go); else go();
 }

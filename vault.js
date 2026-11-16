@@ -26,7 +26,7 @@ export function emptySheet() {
     pl: POSITIONS.map(() => ({ r: '', f: '', s: '', sc: '', id: '', dob: '' })),
     of: ROLES.map((r) => ({ r, f: '', s: '', id: '', dob: '' })),
     cd: [0, 1, 2].map(() => ({ rp: '', ro: '', rl: '', yp: '', yo: '', yl: '' })),
-    sig: [null, null, null]
+    sig: [null, null, null], sigName: ['', '', ''], sigAt: [0, 0, 0]
   };
 }
 
@@ -39,6 +39,8 @@ export function normalizeSheet(d) {
   e.of = e.of.map((x, i) => { const r = (d.of || [])[i] || {}; return { r: s(r.r, 40) || x.r, f: s(r.f, 40), s: s(r.s, 40), id: s(r.id, 20), dob: s(r.dob, 10) }; });
   e.cd = e.cd.map((x, i) => { const r = (d.cd || [])[i] || {}; return { rp: s(r.rp, 40), ro: s(r.ro, 60), rl: s(r.rl, 20), yp: s(r.yp, 40), yo: s(r.yo, 60), yl: s(r.yl, 20) }; });
   e.sig = [0, 1, 2].map((i) => { const v = (d.sig || [])[i]; return typeof v === 'string' && v.startsWith('data:image/png;base64,') && v.length < 400000 ? v : null; });
+  e.sigName = [0, 1, 2].map((i) => s((d.sigName || [])[i], 40));
+  e.sigAt = [0, 1, 2].map((i) => { const t = +(d.sigAt || [])[i]; return e.sig[i] && Number.isFinite(t) && t > 0 ? t : 0; });
   return e;
 }
 

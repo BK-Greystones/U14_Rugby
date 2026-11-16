@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; worker-src 'none'; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; worker-src 'self'; manifest-src 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="robots" content="noindex">
 <meta name="color-scheme" content="light dark">
@@ -34,8 +34,8 @@
   <div class="card">
     <h3>Game details</h3>
     <div class="form">
-      <div><label for="d-hn">Home team</label><input id="d-hn" class="hi" maxlength="40" autocomplete="off"></div>
-      <div><label for="d-an">Away team</label><input id="d-an" class="ai" maxlength="40" autocomplete="off"></div>
+      <div><label for="d-hn">Home team</label><input id="d-hn" maxlength="40" autocomplete="off"></div>
+      <div><label for="d-an">Away team</label><input id="d-an" maxlength="40" autocomplete="off"></div>
       <div class="w"><label for="d-comp">Competition</label><input id="d-comp" maxlength="80" autocomplete="off"></div>
       <div class="w"><label for="d-venue">Venue</label><input id="d-venue" maxlength="60" autocomplete="off"></div>
       <div><label for="d-date">Date</label><input id="d-date" type="date"></div>
@@ -57,7 +57,7 @@
     <label class="scorer"><span>Scorer no.</span><select id="scorer"></select></label>
     <div class="pbtn"><button id="cy">Good +2</button><button id="cn">Missed</button></div>
   </div>
-  <div class="cols"><div class="col h" id="hb" aria-label="Home team actions"></div><div class="col a" id="ab" aria-label="Away team actions"></div></div>
+  <div class="cols"><div class="col" id="hb" aria-label="Home team actions"></div><div class="col" id="ab" aria-label="Away team actions"></div></div>
   <h2>Match log</h2>
   <ul class="log" id="a-log"></ul>
   <div class="foot"><button id="undo">Undo last</button><button id="rscore">Reset score</button><button id="reset">New match</button></div>
@@ -81,9 +81,11 @@
       <p class="sub" id="sh-head"></p>
       <div class="form mt"><div class="w"><label for="sh-team">Team</label><input id="sh-team" maxlength="60" autocomplete="off"></div></div>
       <div class="foot"><a class="abtn" href="https://irfu.sportsmanager.ie/sportlomo/users/login" target="_blank" rel="noopener noreferrer">Open IRFU team sheet</a></div>
-      <div class="form mt"><div class="w"><label for="sh-paste">Paste the team sheet text to fill in players and officials</label><textarea id="sh-paste" rows="4"></textarea></div></div>
-      <button class="pri2 mt" id="sh-imp">Import pasted text</button>
-      <p class="sub mt" id="sh-imsg" role="status">Check every name, ID and date of birth after importing.</p>
+      <div class="upl mt">
+        <input type="file" id="sh-file" accept="application/pdf,.pdf">
+        <label for="sh-file" class="pri2">Upload team sheet PDF</label>
+      </div>
+      <p class="sub mt" id="sh-imsg" role="status">Download the team sheet PDF from the IRFU site, then upload it here to fill in players, officials and match details. The PDF is read on this phone only and is not sent anywhere.</p>
     </div>
     <div class="card priv">
       <h3>Privacy on this device</h3>
@@ -98,8 +100,8 @@
     <h2>Signatures</h2>
     <div id="sh-sig"></div>
     <div class="foot"><button id="sh-clr">Clear all signatures</button></div>
-    <button class="pri2 mt" id="sh-save">Save team sheet as PDF</button>
-    <p class="sub mt" id="sh-msg" role="status">Drawn signatures are a record of agreement, not a certified electronic signature.</p>
+    <button class="pri2 mt" id="sh-save">Create signed team sheet PDF</button>
+    <p class="sub mt" id="sh-msg" role="status">Includes players, officials, the score, cards, signatures with names and times, and the match log.</p>
   </div>
 </section>
 

@@ -151,7 +151,7 @@ The rules are enforced by Google's servers, not by the app. So even someone clev
 | What it protects | Your coach account (who can change scores) | The player details on *one particular phone* |
 | Where it's checked | Firebase, on Google's servers | Only on that phone. Nobody else ever sees it. |
 | Who creates it | You, in Step 6 (coaches can change it later) | Each coach, the first time they open the Sheet tab |
-| If forgotten | Use "Forgot password?" to get a reset email | It can't be recovered. Erase the sheet and paste it in again. |
+| If forgotten | Use "Forgot password?" to get a reset email | It can't be recovered. Erase the sheet and upload the team sheet PDF again. |
 
 ### What happens when there's no signal at the pitch
 
@@ -167,17 +167,17 @@ The app's Firebase settings (including something called an "API key") sit in a f
 
 When you unzip the download, you'll see these files and folders. Your Firebase settings are already filled in, so the only file you'll edit regularly is the fixtures list.
 
-All 22 files sit side by side in one place. There are **no folders**: that makes uploading to GitHub simpler and harder to get wrong.
+All 25 files sit side by side in one place. There are **no folders**: that makes uploading to GitHub simpler and harder to get wrong.
 
 | File | What it is | Do you edit it? |
 |---|---|---|
 | `index.html` | The app's main page. This is what opens when someone visits your site. | No |
 | `app.css` | Colours, sizes and layout. | No |
-| `app.js`, `model.js`, `store.js`, `sheet.js`, `vault.js`, `dom.js` | The app's code: screens, scoring, connecting to Firebase, the team sheet, the encryption "safe" and a safety helper. | No |
+| `app.js`, `model.js`, `store.js`, `sheet.js`, `vault.js`, `dom.js`, `pdfimport.js` | The app's code: screens, scoring, connecting to Firebase, the team sheet, the encryption "safe", a safety helper, and the part that reads uploaded team sheet PDFs. | No |
 | `firebase-config.js` | Tells the app which Firebase project is yours. | **Already done** (one check in Step 8) |
 | `fixtures.json` | Squad names, fixtures and league tables. | **Yes, when fixtures change** |
 | `barlow-….woff2` (4 files) and `OFL.txt` | The lettering the app uses, and its licence. Stored with the app so it doesn't fetch fonts from Google. | No |
-| `firebase.js`, `jspdf.umd.min.js` | Ready-made tools the app relies on: Firebase's own code and a PDF maker. Kept here so the site never loads code from anywhere else. | No |
+| `firebase.js`, `jspdf.umd.min.js`, `pdf.min.js`, `pdf.worker.min.js` | Ready-made tools the app relies on: Firebase's own code, a PDF maker, and a PDF reader (pdf.js) that pulls player details out of the IRFU team sheet. Kept here so the site never loads code from anywhere else. | No |
 | `firestore.rules` | The security rulebook. You copy its contents into Firebase in Step 5. | No (just copy it) |
 | `favicon.svg` | The small rugby-ball icon in the browser tab. | No |
 | `GRFC_U14_rugby_tracker.html` | Has the same name as your old tracker, so anyone using the old link or bookmark is sent to the new app automatically. | No |
@@ -194,7 +194,7 @@ All 22 files sit side by side in one place. There are **no folders**: that makes
 - [ ] **2.** Unpack it:
   - **Windows:** right-click the zip → **Extract All…** → **Extract**.
   - **Mac:** double-click it.
-- [ ] **3.** Open the new folder. You should see 22 files, including `index.html`, `app.js`, `SETUP.md` and `firestore.rules`, and no folders.
+- [ ] **3.** Open the new folder. You should see 25 files, including `index.html`, `app.js`, `SETUP.md` and `firestore.rules`, and no folders.
 
 > **Watch out:** If you open the folder and see *only another folder* inside it, go into that one. You want the level where `index.html` sits.
 
@@ -378,16 +378,16 @@ Send each coach, ideally in a private message rather than a group chat:
 ### 7b. Upload the new files
 
 - [ ] **1.** On the repository page (inside `docs` if that's where the old file was), click **Add file** → **Upload files**.
-- [ ] **2.** On your computer, open the unzipped folder and select **all 22 files** inside it (**Ctrl+A** or **Cmd+A**).
+- [ ] **2.** On your computer, open the unzipped folder and select **all 25 files** inside it (**Ctrl+A** or **Cmd+A**).
 - [ ] **3.** Drag them onto the GitHub page where it says "Drag files here".
   - **Drag the files, not the folder itself.** If you drag the outer folder, everything ends up one level too deep and the site won't load.
   - **Don't upload the zip file.** GitHub won't unpack it.
-- [ ] **4.** Wait until every file is listed. There are about 22 files.
+- [ ] **4.** Wait until every file is listed. There are 25 files.
 - [ ] **5.** Scroll down. In the box under **Commit changes**, type a short note such as `New tracker with live scores`.
 - [ ] **6.** Make sure **Commit directly to the main branch** is selected.
 - [ ] **7.** Click **Commit changes**.
 
-**What you should see:** your repository listing all 22 files side by side, including `index.html`, `app.js`, `fixtures.json` and `firebase-config.js`. The old `GRFC_U14_rugby_tracker.html` has been replaced by the new small redirect file of the same name.
+**What you should see:** your repository listing all 25 files side by side, including `index.html`, `app.js`, `fixtures.json` and `firebase-config.js`. The old `GRFC_U14_rugby_tracker.html` has been replaced by the new small redirect file of the same name.
 
 ### 7c. Check GitHub Pages is switched on
 
@@ -484,10 +484,11 @@ Do this at home before the first match. You'll need your computer and a phone. I
 
 - [ ] **1.** On the coach phone, open the **Sheet** tab.
 - [ ] **2.** Choose a passphrase (at least 8 characters; a short phrase like `blue scrum cap` is easy to remember), type it twice, and tap **Set passphrase and open**.
-- [ ] **3.** Type a made-up name in one player row.
+- [ ] **3.** If you have a team sheet PDF handy, tap **Upload team sheet PDF** and choose it. The players should fill in within a few seconds. Otherwise, type a made-up name in one player row.
 - [ ] **4.** Tap **Lock now**, then try to unlock with a **wrong** passphrase. It should refuse.
-- [ ] **5.** Unlock with the right passphrase. The name should still be there.
-- [ ] **6.** Tap **Erase sheet** to remove the test name.
+- [ ] **5.** Unlock with the right passphrase. The names should still be there.
+- [ ] **6.** Draw a test signature, then tap **Create signed team sheet PDF**. A PDF should download. Open it to check it looks right, then delete it.
+- [ ] **7.** Tap **Erase sheet** to remove the test data.
 
 ### Test 5: Offline scoring
 
@@ -551,12 +552,23 @@ Do this at home before the first match. You'll need your computer and a phone. I
 ### The team sheet
 
 1. On the **Sheet** tab, unlock with your passphrase.
-2. Fill in the players, either by:
-   - typing them in, or
-   - copying the team sheet text from the IRFU website and pasting it into the box, then tapping **Import pasted text**.
-3. Always check the imported names, IDs and dates of birth against the original.
-4. Collect the three signatures with a finger on the signature boxes.
-5. Tap **Save team sheet as PDF**.
+2. **Get the team sheet PDF.** Tap **Open IRFU team sheet**, sign in to the IRFU site, and download the team sheet as a PDF to your phone.
+3. **Upload it.** Back in the tracker, tap **Upload team sheet PDF** and choose the file you just downloaded. On an iPhone, it's usually under **Browse → Downloads**; on Android, under **Downloads**.
+   - The app reads the players, officials, competition, fixture, date, kick-off time and venue from the PDF and fills them in.
+   - **The PDF is read on your phone only.** It is never uploaded anywhere.
+   - If the sheet already has players, the app asks before replacing them.
+4. **Check what was read.** Compare the names, IRFU IDs and dates of birth against the PDF, and correct anything by tapping into the box. You can also type players in by hand at any time.
+5. **Collect the signatures.** Each person signs with a finger in their box (club coach, opposing coach, referee) and types their name in capitals underneath. The app records the date and time of each signature.
+6. **Fill in any red or yellow cards** in the cards table.
+7. **At full time, tap Create signed team sheet PDF.** If anyone hasn't signed yet, the app tells you who and asks whether to continue.
+
+**What's in the signed PDF:**
+
+- **Page 1 is the team sheet:** match details, players, officials, the match result (points, tries, conversions, penalty goals, drop goals), the cards table, and the three signatures with names and times.
+- **Page 2 is the match log:** every score and card with its minute and, for Greystones tries, the scorer's shirt number and name.
+- **About the signatures:** a note at the bottom says they are drawn on screen. That makes them a record of agreement, not a certified electronic signature.
+
+**Which PDFs work:** the PDF must have real text in it, which is how team sheets downloaded from the IRFU site are made. A **scan or a photo of a printed sheet won't work**; the app says so if you try one. In that case, type the players in.
 
 > **The PDF contains player details without protection.** Share it only with the people who need it (such as the referee or the branch), and delete it from your phone afterwards.
 
@@ -645,7 +657,7 @@ If you do commit a mistake, the app still works, but shows "Fixtures could not b
 
 | What you see | What it means | How to fix it |
 |---|---|---|
-| **Stuck on Loading**: the page shows only "Loading…" in plain black text, with no colours | The browser can't find the app's other files, usually because they're in a different place from `index.html`. | Open your repository on GitHub. All 22 files must sit side by side next to `index.html`, not inside any folders. Upload any that are missing or in the wrong place, wait two minutes, then refresh. |
+| **Stuck on Loading**: the page shows only "Loading…" in plain black text, with no colours | The browser can't find the app's other files, usually because they're in a different place from `index.html`. | Open your repository on GitHub. All 25 files must sit side by side next to `index.html`, not inside any folders. Upload any that are missing or in the wrong place, wait two minutes, then refresh. |
 | "Live scores are not switched on yet" | The app can't find your Firebase settings. | Check `firebase-config.js` on GitHub matches the example in Step 8, with quotes and commas intact. Wait two minutes after committing, then refresh. |
 | A blank page, or just "Loading…" | Usually a typo in `firebase-config.js`, such as a missing quote or comma. | Compare your file carefully with the example in Step 8. |
 | "This site's Firebase key is not right", or live scores never load | One character of the `apiKey` is wrong. | Do Step 8 again, pasting the key straight from Firebase. |
@@ -655,8 +667,12 @@ If you do commit a mistake, the app still works, but shows "Fixtures could not b
 | Parents don't see updates | The coach's phone has no signal, or the parent's page is stale. | Look at the coach's status line (Offline / Saving / All changes saved). Ask parents to refresh. |
 | Sign-in fails after the optional security step | The website restriction doesn't match your address. | Check it's exactly `https://yourname.github.io/*`. |
 | "Fixtures could not be loaded" | A typo in `fixtures.json`. | Paste it into jsonlint.com to find the line, and fix it. |
+| "This PDF has no readable text" | The PDF is a scan or photo, not a downloaded team sheet. | Download the team sheet from the IRFU site as a PDF and upload that. Or type the players in. |
+| "No player rows were found in this PDF" | The PDF has text, but not laid out the way the app expects. The IRFU may have changed their sheet design. | Type the players in for now, and pass the PDF (with the details blacked out if you prefer) to whoever looks after the tracker so the reader can be adjusted. |
+| Some players are in the wrong boxes after uploading | The PDF's columns didn't line up as expected. | Correct them by tapping into the boxes. Always check after uploading. |
+| "This PDF is password-protected" | The PDF has a password. | Download an unprotected copy, or type the players in. |
 | No password reset email | It's probably in spam. | Check the spam folder for an email from `…firebaseapp.com`. |
-| Forgot the team sheet passphrase | By design, it can't be recovered. | Tap **Forgot passphrase – erase sheet from this device**, then set a new one and re-enter or paste the sheet. |
+| Forgot the team sheet passphrase | By design, it can't be recovered. | Tap **Forgot passphrase – erase sheet from this device**, then set a new one and upload the team sheet PDF again or retype the sheet. |
 | The old link still shows the old tracker | Your phone has saved an old copy. | Refresh the page. The old address now sends people to the new app. |
 | A notice about "data saved by the old version" | The phone used the old tracker, which kept player details unprotected. | Coaches: open the Sheet tab and set a passphrase to move them into protection. Anyone else: tap **Delete old data now**. |
 
@@ -720,7 +736,7 @@ It's good practice to tell parents that the live score page exists, and that it 
 
 ### Updating the built-in tools (for someone technical)
 
-`firebase.js` is Firebase version 13.3.0, and `jspdf.umd.min.js` is jsPDF version 4.2.1. Updates aren't urgent, but a technical volunteer can refresh them once a season.
+`firebase.js` is Firebase version 13.3.0, `jspdf.umd.min.js` is jsPDF version 4.2.1, and `pdf.min.js` with `pdf.worker.min.js` is pdf.js version 6.5.438 (the "legacy" build, which works on older phones). Updates aren't urgent, but a technical volunteer can refresh them once a season.
 
 1. In an empty folder, run:
 
@@ -735,5 +751,5 @@ It's good practice to tell parents that the live score page exists, and that it 
    npx esbuild fb-entry.js --bundle --format=esm --minify --outfile=firebase.js
    ```
 
-4. Copy `node_modules/jspdf/dist/jspdf.umd.min.js` next to the other files.
+4. Copy `node_modules/jspdf/dist/jspdf.umd.min.js` next to the other files. For pdf.js, run `npm install pdfjs-dist`, then copy `legacy/build/pdf.min.mjs` and `legacy/build/pdf.worker.min.mjs` from `node_modules/pdfjs-dist/`, renaming them to end in `.js`.
 5. Test using preview mode before uploading.

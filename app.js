@@ -14,6 +14,13 @@ const notes = new Map();
 
 const squad = (k) => (FX.teams[k] && FX.teams[k].name) || k;
 const vault = () => (vaults[AT] = vaults[AT] || new Vault(AT));
+// Greystones is always shown in green, whether home or away.
+function gsSideOf(names) {
+  const hl = (FX.highlight || '').toLowerCase();
+  const i = hl ? names.findIndex((n) => (n || '').toLowerCase().includes(hl)) : -1;
+  return i < 0 ? 0 : i;
+}
+const side = (x, t) => (t === gsSideOf([M.name(x, 0), M.name(x, 1)]) ? 'us' : 'them');
 
 /* ---------- notes ---------- */
 function note(key, text, opts) {
@@ -63,20 +70,21 @@ function syncStatus() {
 function board(p) {
   return [h('div', { class: 'meta', id: p + '-meta' }),
     h('div', { class: 'board' },
-      h('div', { class: 'team h' }, h('div', { class: 'tn', id: p + '-hn' }), h('div', { class: 'score', id: p + '-hs', text: '0' })),
+      h('div', { class: 'team', id: p + '-ht' }, h('div', { class: 'tn', id: p + '-hn' }), h('div', { class: 'score', id: p + '-hs', text: '0' })),
       h('div', { class: 'clock' }, h('div', { class: 'time', id: p + '-time', text: '00:00' }), h('div', { class: 'half', id: p + '-half' })),
-      h('div', { class: 'team a' }, h('div', { class: 'tn', id: p + '-an' }), h('div', { class: 'score', id: p + '-as', text: '0' })))];
+      h('div', { class: 'team', id: p + '-at' }, h('div', { class: 'tn', id: p + '-an' }), h('div', { class: 'score', id: p + '-as', text: '0' })))];
 }
 function updBoard(p, x) {
   $(p + '-meta').textContent = M.metaLine(x);
   $(p + '-hn').textContent = M.name(x, 0); $(p + '-an').textContent = M.name(x, 1);
+  $(p + '-ht').className = 'team ' + side(x, 0); $(p + '-at').className = 'team ' + side(x, 1);
   $(p + '-hs').textContent = M.score(x, 0); $(p + '-as').textContent = M.score(x, 1);
   tickBoard(p, x);
 }
 function tickBoard(p, x) {
   $(p + '-time').textContent = M.clockText(M.elapsed(x));
   $(p + '-half').textContent = M.status(x);
-  fill(p + '-bins', M.sinBins(x).map((b) => h('li', { class: 't' + b.t },
+  fill(p + '-bins', M.sinBins(x).map((b) => h('li', { class: side(x, b.t) },
     h('span', null, M.name(x, b.t) + ' sin bin' + (b.no ? ' #' + b.no : '')), h('b', { text: M.clockText(b.left + 999) }))));
 }
 function ourSide(x) {
@@ -88,14 +96,14 @@ function logList(id, x, showNames) {
   const our = showNames ? ourSide(x) : -1;
   const items = x.ev.slice().reverse().map((e) => {
     const who = e.no && e.t === our ? playerName(e.no) : '';
-    return h('li', null, h('b', { text: e.m + '’' }), h('span', { class: 'tag t' + e.t }), h('span', { text: M.eventText(x, e) + (who ? ' (' + who + ')' : '') }));
+    return h('li', null, h('b', { text: e.m + '’' }), h('span', { class: e.t === 2 ? 'tag' : 'tag ' + side(x, e.t) }), h('span', { text: M.eventText(x, e) + (who ? ' (' + who + ')' : '') }));
   });
   fill(id, items.length ? items : h('li', { class: 'empty', text: 'Nothing yet.' }));
 }
 function totals(x) {
   const rate = (t) => { const k = M.count(x, t, 'con') + M.count(x, t, 'conx'); return k ? Math.round(M.count(x, t, 'con') / k * 100) + '%' : '–'; };
   const rows = [['Tries', 'try'], ['Penalty tries', 'pentry'], ['Conversions made', 'con'], ['Conversions missed', 'conx'], ['Conversion rate'], ['Penalties', 'pen'], ['Drop goals', 'drop'], ['Yellow cards', 'yc'], ['Red cards', 'rc']];
-  fill('l-tbl', h('tr', null, h('th'), h('th', { class: 'h', text: M.name(x, 0) }), h('th', { class: 'a', text: M.name(x, 1) })),
+  fill('l-tbl', h('tr', null, h('th'), h('th', { class: side(x, 0), text: M.name(x, 0) }), h('th', { class: side(x, 1), text: M.name(x, 1) })),
     rows.map(([l, k]) => h('tr', null, h('td', { text: l }), h('td', { text: k ? M.count(x, 0, k) : rate(0) }), h('td', { text: k ? M.count(x, 1, k) : rate(1) }))));
 }
 
@@ -103,6 +111,8 @@ function totals(x) {
 function draw() {
   if (role === 'admin' && m) {
     updBoard('a', m); logList('a-log', m, true); shRes();
+    $('hb').className = 'col ' + side(m, 0); $('ab').className = 'col ' + side(m, 1);
+    $('d-hn').className = side(m, 0); $('d-an').className = side(m, 1);
     $('run').textContent = m.run ? 'Pause' : (m.el > 0 && !m.over ? 'Resume' : 'Start');
     $('run').disabled = m.over;
     $('phase').textContent = m.half === 1 ? 'Half time' : 'Full time'; $('phase').disabled = m.over;
@@ -216,6 +226,7 @@ function applyDetails(d) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(d.date)) m.date = d.date;
   if (/^\d{2}:\d{2}$/.test(d.ko)) m.ko = d.ko;
   if (d.venue) m.venue = d.venue.slice(0, 60);
+  if (d.comp) m.comp = d.comp.slice(0, 80);
   persist(); fillForm(); draw();
   return ' Match details were updated from the sheet.';
 }
@@ -254,7 +265,7 @@ function drawRes() {
   fill('r-list', list.map((r) => {
     const meta = M.metaLine({ comp: r.comp, venue: r.venue, date: r.date });
     return h('div', { class: 'card res' }, r.tk && FX.teams[r.tk] ? h('div', { class: 'sq', text: squad(r.tk) }) : null,
-      [0, 1].map((t) => h('div', { class: 'top' }, h('span', { class: 'nm' + (r.s[t] > r.s[1 - t] ? ' w' : ''), text: r.n[t] }), h('span', { class: 'sc', text: r.s[t] }))),
+      [0, 1].map((t) => { const c = t === gsSideOf(r.n) ? ' us' : ''; return h('div', { class: 'top' }, h('span', { class: 'nm' + (r.s[t] > r.s[1 - t] ? ' w' : '') + c, text: r.n[t] }), h('span', { class: 'sc' + c, text: r.s[t] })); }),
       h('p', { class: 'sub', text: 'Tries ' + r.t[0] + '–' + r.t[1] + ' · Conversions ' + r.c[0] + '–' + r.c[1] + ' · Penalties ' + r.p[0] + '–' + r.p[1] + ' · Drops ' + r.d[0] + '–' + r.d[1] }),
       meta ? h('p', { class: 'sub', text: meta }) : null);
   }));
@@ -394,7 +405,7 @@ async function boot() {
   await clock;
   $('a-board').append(...board('a')); $('l-board').append(...board('l'));
   setupScoring(); setupForm(); setupLogin();
-  initSheet({ vault, match: () => m, squadName: () => squad(AT), ask, applyDetails, defTeam, onChange: draw });
+  initSheet({ vault, match: () => m, squadName: () => squad(AT), ask, applyDetails, defTeam, onChange: draw, ourSide: () => ourSide(m) });
 
   $('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) show(b.dataset.v); });
   $('a-sw').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) switchTeam(b.dataset.at); });
