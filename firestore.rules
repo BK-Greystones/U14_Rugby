@@ -1,0 +1,71 @@
+rules_version = '2';
+
+// Who can do what:
+//  - Anyone can read live matches and results (that's the parents' view).
+//  - Only signed-in accounts listed in the `admins` collection can write, and
+//    every write must match the expected shape and size.
+//  - Nothing else in the database can be read or written. Player details are
+//    never stored here; they stay encrypted on the coach's phone.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    function str(v, max) { return v is string && v.size() <= max; }
+    function num(v, lo, hi) { return v is number && v >= lo && v <= hi; }
+    function pair(v, hi) { return v is list && v.size() == 2 && num(v[0], 0, hi) && num(v[1], 0, hi); }
+
+    function validMatch(d, team) {
+      return d.keys().hasOnly(['id', 'tk', 'n', 'comp', 'venue', 'date', 'ko', 'fx', 'hl', 'sb', 'half',
+                               'el', 'adj', 'run', 't0', 'over', 'ev', 'pend', 'upd'])
+        && d.keys().hasAll(['id', 'tk', 'n', 'ev', 'upd'])
+        && str(d.id, 40) && d.tk == team
+        && d.n is list && d.n.size() == 2 && str(d.n[0], 40) && str(d.n[1], 40)
+        && str(d.get('comp', ''), 80) && str(d.get('venue', ''), 60)
+        && str(d.get('date', ''), 10) && str(d.get('ko', ''), 5) && str(d.get('fx', ''), 200)
+        && num(d.get('hl', 40), 1, 60) && num(d.get('sb', 10), 1, 20) && d.get('half', 1) in [1, 2]
+        && num(d.get('el', 0), 0, 21600000) && num(d.get('adj', 0), 0, 21600000)
+        && d.get('run', false) is bool && d.get('over', false) is bool
+        && num(d.get('t0', 0), 0, 9000000000000000)
+        && d.ev is list && d.ev.size() <= 400
+        && (d.get('pend', null) == null || d.pend in [0, 1])
+        && num(d.upd, 0, 9000000000000000);
+    }
+
+    function validResult(r, id) {
+      return r.keys().hasOnly(['id', 'tk', 'n', 'comp', 'venue', 'date', 's', 't', 'c', 'p', 'd', 'upd'])
+        && r.id == id && str(r.tk, 20)
+        && r.n is list && r.n.size() == 2 && str(r.n[0], 40) && str(r.n[1], 40)
+        && str(r.comp, 80) && str(r.venue, 60) && str(r.date, 10)
+        && pair(r.s, 999) && pair(r.t, 99) && pair(r.c, 99) && pair(r.p, 99) && pair(r.d, 99)
+        && num(r.upd, 0, 9000000000000000);
+    }
+
+    match /matches/{team} {
+      allow read: if true;
+      allow create, update: if isAdmin() && team.matches('^[a-z0-9-]{1,20}$')
+                            && validMatch(request.resource.data, team);
+      allow delete: if isAdmin();
+    }
+
+    match /results/{id} {
+      allow read: if true;
+      allow create, update: if isAdmin() && id.matches('^[A-Za-z0-9]{4,40}$')
+                            && validResult(request.resource.data, id);
+      allow delete: if isAdmin();
+    }
+
+    // Coaches list. Each document ID is a coach's Firebase user ID.
+    // Managed only from the Firebase console; a coach can check their own entry.
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
