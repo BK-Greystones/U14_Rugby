@@ -199,7 +199,7 @@ function importPasted() {
 /* ---------- PDF ---------- */
 function loadJsPdf() {
   if (window.jspdf) return Promise.resolve();
-  return new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'vendor/jspdf.umd.min.js'; s.onload = res; s.onerror = rej; document.head.append(s); });
+  return new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'jspdf.umd.min.js'; s.onload = res; s.onerror = rej; document.head.append(s); });
 }
 async function renderCanvas() {
   const m = ctx.match(), d = ctx.vault().data;

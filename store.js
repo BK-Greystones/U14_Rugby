@@ -16,7 +16,7 @@ export async function openStore() {
 }
 
 async function firebaseStore() {
-  const fb = await import('../vendor/firebase.js');
+  const fb = await import('./firebase.js');
   const app = fb.initializeApp(firebaseConfig);
   // initializeAuth without a popup/redirect resolver: no hidden iframes are loaded.
   const auth = fb.initializeAuth(app, { persistence: [fb.indexedDBLocalPersistence, fb.browserLocalPersistence] });

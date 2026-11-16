@@ -23,7 +23,7 @@ export const now = () => Date.now() + offset;
 export async function syncClock() {
   try {
     const t1 = Date.now();
-    const r = await fetch('data/fixtures.json?clock=' + t1, { method: 'HEAD', cache: 'no-store' });
+    const r = await fetch('fixtures.json?clock=' + t1, { method: 'HEAD', cache: 'no-store' });
     const t2 = Date.now();
     const d = Date.parse(r.headers.get('Date') || '');
     if (!isNaN(d) && t2 - t1 < 3000) offset = d + 500 - (t1 + t2) / 2;

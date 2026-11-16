@@ -330,6 +330,7 @@ function setupLogin() {
       const c = e && e.code;
       msg.textContent = c === 'auth/too-many-requests' ? 'Too many attempts. Wait a few minutes and try again.'
         : c === 'auth/network-request-failed' ? 'No connection. Check your signal and try again.'
+        : /api-key/.test(c || '') ? 'This site\'s Firebase key is not right. The site owner should redo Step 8 in SETUP.md.'
         : 'That email and password do not match a coach account.';
     } finally { $('li-go').disabled = false; $('li-pass').value = ''; }
   };
@@ -378,7 +379,7 @@ async function boot() {
   purgeExpired();
   const clock = M.syncClock();
   try {
-    const r = await fetch('data/fixtures.json', { cache: 'no-cache' });
+    const r = await fetch('fixtures.json', { cache: 'no-cache' });
     FX = validFixtures(await r.json());
   } catch { note('fx', 'Fixtures could not be loaded. Live scores still work.', { bad: true }); }
   TK = Object.keys(FX.teams);

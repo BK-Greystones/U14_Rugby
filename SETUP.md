@@ -4,31 +4,74 @@
 
 This guide assumes you have never set up a website, a database or a login system before. Every step says exactly where to click, what you should see, and why you're doing it. Take it slowly and tick off each box as you go.
 
-Allow about **45 minutes** for the first time. You only do this once.
+Allow about **30 minutes** for the remaining steps. You only do this once.
 
 ---
 
 ## Contents
 
+1. [Your project details](#your-project-details)
 1. [Before you start](#before-you-start)
-2. [How it all fits together](#how-it-all-fits-together)
-3. [What each file does](#what-each-file-does)
-4. [Step 1: Unzip the files](#step-1-unzip-the-files)
-5. [Step 2: Create your Firebase project](#step-2-create-your-firebase-project)
-6. [Step 3: Get your Firebase settings](#step-3-get-your-firebase-settings)
-7. [Step 4: Turn on coach sign-in](#step-4-turn-on-coach-sign-in)
-8. [Step 5: Create the database and its security rules](#step-5-create-the-database-and-its-security-rules)
-9. [Step 6: Create the coach accounts](#step-6-create-the-coach-accounts)
-10. [Step 7: Put the files on GitHub](#step-7-put-the-files-on-github)
-11. [Step 8: Add your settings to the website](#step-8-add-your-settings-to-the-website)
-12. [Step 9: Tell Firebase your website's address](#step-9-tell-firebase-your-websites-address)
-13. [Step 10: Test everything](#step-10-test-everything)
-14. [Optional extra security](#optional-extra-security)
-15. [Using it on matchday](#using-it-on-matchday)
-16. [Looking after it during the season](#looking-after-it-during-the-season)
-17. [If something goes wrong](#if-something-goes-wrong)
-18. [Glossary](#glossary)
-19. [Appendix: for the curious](#appendix-for-the-curious)
+1. [How it all fits together](#how-it-all-fits-together)
+1. [What each file does](#what-each-file-does)
+1. [Step 1: Unzip the files](#step-1-unzip-the-files)
+1. [Step 2: Create your Firebase project](#step-2-create-your-firebase-project)
+1. [Step 3: Get your Firebase settings](#step-3-get-your-firebase-settings)
+1. [Step 4: Turn on coach sign-in](#step-4-turn-on-coach-sign-in)
+1. [Step 5: Create the database and its security rules](#step-5-create-the-database-and-its-security-rules)
+1. [Step 6: Create the coach accounts](#step-6-create-the-coach-accounts)
+1. [Step 7: Put the files on GitHub](#step-7-put-the-files-on-github)
+1. [Step 8: Double-check the key](#step-8-double-check-the-key)
+1. [Step 9: Tell Firebase your website's address](#step-9-tell-firebase-your-websites-address)
+1. [Step 10: Test everything](#step-10-test-everything)
+1. [Optional extra security](#optional-extra-security)
+1. [Using it on matchday](#using-it-on-matchday)
+1. [Looking after it during the season](#looking-after-it-during-the-season)
+1. [If something goes wrong](#if-something-goes-wrong)
+1. [Glossary](#glossary)
+1. [Appendix: for the curious](#appendix-for-the-curious)
+
+---
+
+## Your project details
+
+Your Firebase project is already created, and its settings are already in the app. Keep this page handy: the links below jump straight to the right screen, so you don't have to hunt through menus.
+
+| Setting | Your value |
+|---|---|
+| Project name (ID) | `greystones-rugby-club-youth` |
+| App nickname | GRFC Rugby tracker |
+| Auth domain | `greystones-rugby-club-youth.firebaseapp.com` |
+| App ID | `1:544038353341:web:bfc816757bab741ab87ad4` |
+| Where the app reads these | `firebase-config.js` (already filled in) |
+
+### Quick links to your project
+
+You must be signed in to the Google account that owns the project for these to open.
+
+| To do this | Open |
+|---|---|
+| Turn on sign-in (Step 4) | https://console.firebase.google.com/project/greystones-rugby-club-youth/authentication/providers |
+| Add coaches, find their UIDs (Step 6) | https://console.firebase.google.com/project/greystones-rugby-club-youth/authentication/users |
+| Approve your website's address (Step 9) | https://console.firebase.google.com/project/greystones-rugby-club-youth/authentication/settings |
+| The database: data and coaches list (Steps 5 and 6) | https://console.firebase.google.com/project/greystones-rugby-club-youth/firestore |
+| The database security rules (Step 5b) | https://console.firebase.google.com/project/greystones-rugby-club-youth/firestore/rules |
+| Project settings and your app's config (Step 3) | https://console.firebase.google.com/project/greystones-rugby-club-youth/settings/general |
+| Lock the key to your website (optional) | https://console.cloud.google.com/apis/credentials?project=greystones-rugby-club-youth |
+
+> If a link opens a "Get started" page instead, that service hasn't been switched on yet. Follow the matching step below.
+
+### Your progress
+
+- [x] Step 2: Firebase project created
+- [x] Step 3: Firebase settings copied into the app
+- [ ] Step 4: Turn on coach sign-in
+- [ ] Step 5: Create the database and security rules
+- [ ] Step 6: Create the coach accounts
+- [ ] Step 7: Put the files on GitHub
+- [ ] Step 8: Double-check the key (one quick check)
+- [ ] Step 9: Approve your website's address
+- [ ] Step 10: Test everything
 
 ---
 
@@ -37,9 +80,9 @@ Allow about **45 minutes** for the first time. You only do this once.
 You will need:
 
 - [ ] **A computer** (Windows or Mac). A phone is not enough for set-up, though you'll use phones afterwards.
-- [ ] **A Google account** (a Gmail address works). Firebase belongs to Google and uses this to sign you in. A club or committee Google account is better than a personal one, so the project doesn't depend on one person.
+- [ ] **The Google account that owns the `greystones-rugby-club-youth` Firebase project.** You'll sign in with it for Steps 4, 5, 6 and 9.
 - [ ] **The GitHub account** that currently hosts your tracker, and its password.
-- [ ] **The zip file** `grfc-u14-tracker.zip`, downloaded to your computer.
+- [ ] **The zip file** `grfc-u14-tracker.zip`, downloaded to your computer. Your Firebase settings are already inside it.
 - [ ] **The email addresses** of each coach who needs to score matches.
 - [ ] **A notepad.** Use paper, or a text file such as Notepad (Windows) or TextEdit (Mac), to jot down a few values as you go.
 
@@ -116,24 +159,26 @@ The app keeps working. Scores are saved on the coach's phone and sent to the dat
 
 ### Why your Firebase settings are visible to everyone
 
-In Step 8 you'll paste some Firebase settings (including something called an "API key") into a file that anyone can see. That's normal and safe. It's like printing the club's address on a sign: it tells the app *where* the database is, but it isn't a key to the door. The security rules are the lock, and only the coaches list gets through.
+The app's Firebase settings (including something called an "API key") sit in a file that anyone can see. That's normal and safe. It's like printing the club's address on a sign: it tells the app *where* the database is, but it isn't a key to the door. The security rules are the lock, and only the coaches list gets through.
 
 ---
 
 ## What each file does
 
-When you unzip the download, you'll see these files and folders. Only two need you to edit them, and only one of those (fixtures) ever needs editing again.
+When you unzip the download, you'll see these files and folders. Your Firebase settings are already filled in, so the only file you'll edit regularly is the fixtures list.
 
-| File or folder | What it is | Do you edit it? |
+All 22 files sit side by side in one place. There are **no folders**: that makes uploading to GitHub simpler and harder to get wrong.
+
+| File | What it is | Do you edit it? |
 |---|---|---|
 | `index.html` | The app's main page. This is what opens when someone visits your site. | No |
-| `css/` | Colours, sizes and layout. | No |
-| `js/` | The app's code. | Only `firebase-config.js` (once, in Step 8) |
-| `js/firebase-config.js` | Tells the app which Firebase project is yours. | **Yes, once** |
-| `data/fixtures.json` | Squad names, fixtures and league tables. | **Yes, when fixtures change** |
-| `fonts/` | The lettering the app uses, stored with the app so it doesn't fetch fonts from Google. | No |
-| `vendor/` | Ready-made tools the app relies on: Firebase's own code and a PDF maker. Kept here so the site never loads code from anywhere else. | No |
-| `firestore.rules` | The security rulebook. You'll copy its contents into Firebase in Step 5. | No (just copy it) |
+| `app.css` | Colours, sizes and layout. | No |
+| `app.js`, `model.js`, `store.js`, `sheet.js`, `vault.js`, `dom.js` | The app's code: screens, scoring, connecting to Firebase, the team sheet, the encryption "safe" and a safety helper. | No |
+| `firebase-config.js` | Tells the app which Firebase project is yours. | **Already done** (one check in Step 8) |
+| `fixtures.json` | Squad names, fixtures and league tables. | **Yes, when fixtures change** |
+| `barlow-….woff2` (4 files) and `OFL.txt` | The lettering the app uses, and its licence. Stored with the app so it doesn't fetch fonts from Google. | No |
+| `firebase.js`, `jspdf.umd.min.js` | Ready-made tools the app relies on: Firebase's own code and a PDF maker. Kept here so the site never loads code from anywhere else. | No |
+| `firestore.rules` | The security rulebook. You copy its contents into Firebase in Step 5. | No (just copy it) |
 | `favicon.svg` | The small rugby-ball icon in the browser tab. | No |
 | `GRFC_U14_rugby_tracker.html` | Has the same name as your old tracker, so anyone using the old link or bookmark is sent to the new app automatically. | No |
 | `SETUP.md` | This guide. | No |
@@ -149,7 +194,7 @@ When you unzip the download, you'll see these files and folders. Only two need y
 - [ ] **2.** Unpack it:
   - **Windows:** right-click the zip → **Extract All…** → **Extract**.
   - **Mac:** double-click it.
-- [ ] **3.** Open the new folder. You should see `index.html`, `SETUP.md`, `firestore.rules` and the folders `css`, `data`, `fonts`, `js` and `vendor`.
+- [ ] **3.** Open the new folder. You should see 22 files, including `index.html`, `app.js`, `SETUP.md` and `firestore.rules`, and no folders.
 
 > **Watch out:** If you open the folder and see *only another folder* inside it, go into that one. You want the level where `index.html` sits.
 
@@ -157,56 +202,36 @@ When you unzip the download, you'll see these files and folders. Only two need y
 
 ## Step 2: Create your Firebase project
 
-**Why:** A "project" is your club's own private space in Firebase. It will hold the login system and the database.
+**✅ Already done.** Your project is called **`greystones-rugby-club-youth`**.
 
-- [ ] **1.** Go to **https://console.firebase.google.com** and sign in with the Google account you chose.
-- [ ] **2.** Click **Create a project** (or **Add project**, or **Get started with a Firebase project**).
-- [ ] **3.** **Project name:** type something like `greystones-u14`. Firebase may add some random letters to the end. That's fine.
-- [ ] **4.** Accept the terms if asked, and click **Continue**.
-- [ ] **5.** If you're asked about **Gemini** or **AI assistance**, you can turn it off. The tracker doesn't use it.
-- [ ] **6.** When asked about **Google Analytics**, switch it **off**. The tracker doesn't use it, and leaving it off means fewer data-protection questions.
-- [ ] **7.** Click **Create project**, wait about 30 seconds, then click **Continue**.
+**What this was:** a project is your club's own private space in Firebase. It will hold the login system and the database.
 
-**What you should see:** the project's home page, with your project name at the top left and a menu down the left side.
+**About Google Analytics:** your settings include a "measurementId", which means Google Analytics was switched on when the project was created. That's fine to leave as it is. The tracker never loads the Analytics code, so no visitor data is collected. If you'd prefer to switch it off completely, go to **gear icon ⚙ → Project settings → Integrations → Google Analytics → Manage → Unlink**. It's optional.
 
 ---
 
 ## Step 3: Get your Firebase settings
 
-**Why:** The app needs to know which Firebase project is yours. Firebase gives you a short block of settings to copy for this. Registering a "web app" is just how Firebase hands those settings out.
+**✅ Already done.** The settings from your screenshot have been copied into `firebase-config.js` for you.
 
-- [ ] **1.** On the project home page, find the row of round icons under "Get started by adding Firebase to your app". Click the one that looks like **`</>`** (it means "Web").
-  - If you can't see it: click the **gear icon ⚙** at the top left → **Project settings** → scroll to **Your apps** → click **`</>`**.
-- [ ] **2.** **App nickname:** type `tracker`.
-- [ ] **3.** **Leave the "Firebase Hosting" box unticked.** You're using GitHub for hosting.
-- [ ] **4.** Click **Register app**.
-- [ ] **5.** You'll see a box of code. Look for a part like this (your values will be different):
+**What these settings are:** they tell the app which Firebase project is yours. The app uses four of them:
 
-  ```js
-  const firebaseConfig = {
-    apiKey: "AIzaSyB1a2b3c4d5e6f7g8h9i0jKlMnOpQrStUv",
-    authDomain: "greystones-u14.firebaseapp.com",
-    projectId: "greystones-u14",
-    storageBucket: "greystones-u14.firebasestorage.app",
-    messagingSenderId: "123456789012",
-    appId: "1:123456789012:web:abc123def456"
-  };
-  ```
+| Setting | What it does |
+|---|---|
+| `apiKey` | A label identifying your project to Google. It's not a password (see "Why your Firebase settings are visible to everyone" above). |
+| `authDomain` | The address Firebase uses for sign-in. |
+| `projectId` | Your project's name, so the app finds the right database. |
+| `appId` | Identifies the "GRFC Rugby tracker" web app inside your project. |
 
-- [ ] **6.** Copy these **four** values into your notepad, exactly as shown, without the quote marks:
-  - `apiKey`
-  - `authDomain`
-  - `projectId`
-  - `appId`
+The others in your screenshot (`storageBucket`, `messagingSenderId` and `measurementId`) are for Firebase features the tracker doesn't use, so they were left out on purpose.
 
-  You don't need the others.
-- [ ] **7.** Click **Continue to console**.
-
-> **Lost them?** You can always find them again: **gear icon ⚙ → Project settings → General**, then scroll to **Your apps** and choose **Config**.
+**If you ever need them again:** [Project settings](https://console.firebase.google.com/project/greystones-rugby-club-youth/settings/general) → scroll to **Your apps** → **GRFC Rugby tracker** → choose **Config**.
 
 ---
 
 ## Step 4: Turn on coach sign-in
+
+**Shortcut:** [open Sign-in method](https://console.firebase.google.com/project/greystones-rugby-club-youth/authentication/providers) and skip to step 3 below.
 
 **Why:** This switches on the "membership desk", so coaches can sign in with an email and password.
 
@@ -234,6 +259,8 @@ Now only accounts you create can exist. If you don't see this option, don't worr
 
 ### 5a. Create the database
 
+**Shortcut:** [open Firestore Database](https://console.firebase.google.com/project/greystones-rugby-club-youth/firestore) and skip to step 2 below.
+
 - [ ] **1.** In the left menu, click **Build** (or **All products**), then **Firestore Database**.
 - [ ] **2.** Click **Create database**.
 - [ ] **3.** If asked to choose an **edition**, choose **Standard**.
@@ -248,6 +275,8 @@ Now only accounts you create can exist. If you don't see this option, don't worr
 **What you should see:** an empty database page with tabs along the top: **Data**, **Rules**, **Indexes** and others.
 
 ### 5b. Add the security rules
+
+**Shortcut:** [open the Rules tab](https://console.firebase.google.com/project/greystones-rugby-club-youth/firestore/rules) and skip to step 4 below, after copying the file in steps 1–2.
 
 - [ ] **1.** On your computer, open the unzipped folder and open `firestore.rules` with a plain text editor:
   - **Windows:** right-click → **Open with** → **Notepad**.
@@ -282,6 +311,8 @@ Having an account alone isn't enough. That's deliberate, so that only people you
 
 ### 6a. Create each coach's account
 
+**Shortcut:** [open Users](https://console.firebase.google.com/project/greystones-rugby-club-youth/authentication/users) and skip to step 2 below.
+
 - [ ] **1.** Go to **Authentication** in the left menu, then click the **Users** tab.
 - [ ] **2.** Click **Add user**.
 - [ ] **3.** Enter the coach's **email address**.
@@ -300,6 +331,8 @@ Having an account alone isn't enough. That's deliberate, so that only people you
 - [ ] **3.** Do this for every coach.
 
 ### 6c. Create the coaches list
+
+**Shortcut:** [open Firestore data](https://console.firebase.google.com/project/greystones-rugby-club-youth/firestore) and skip to step 2 below.
 
 - [ ] **1.** Go to **Firestore Database** → **Data** tab.
 - [ ] **2.** Click **+ Start collection**.
@@ -345,16 +378,16 @@ Send each coach, ideally in a private message rather than a group chat:
 ### 7b. Upload the new files
 
 - [ ] **1.** On the repository page (inside `docs` if that's where the old file was), click **Add file** → **Upload files**.
-- [ ] **2.** On your computer, open the unzipped folder and select **everything inside it**: all files *and* folders (**Ctrl+A** or **Cmd+A**).
+- [ ] **2.** On your computer, open the unzipped folder and select **all 22 files** inside it (**Ctrl+A** or **Cmd+A**).
 - [ ] **3.** Drag them onto the GitHub page where it says "Drag files here".
-  - **Drag the contents, not the folder itself.** If you drag the outer folder, everything ends up one level too deep and the site won't load.
+  - **Drag the files, not the folder itself.** If you drag the outer folder, everything ends up one level too deep and the site won't load.
   - **Don't upload the zip file.** GitHub won't unpack it.
 - [ ] **4.** Wait until every file is listed. There are about 22 files.
 - [ ] **5.** Scroll down. In the box under **Commit changes**, type a short note such as `New tracker with live scores`.
 - [ ] **6.** Make sure **Commit directly to the main branch** is selected.
 - [ ] **7.** Click **Commit changes**.
 
-**What you should see:** your repository listing `index.html`, `README.md`, `SETUP.md`, `firestore.rules` and the folders `css`, `data`, `fonts`, `js`, `vendor`. The old `GRFC_U14_rugby_tracker.html` has been replaced by the new small redirect file of the same name.
+**What you should see:** your repository listing all 22 files side by side, including `index.html`, `app.js`, `fixtures.json` and `firebase-config.js`. The old `GRFC_U14_rugby_tracker.html` has been replaced by the new small redirect file of the same name.
 
 ### 7c. Check GitHub Pages is switched on
 
@@ -372,48 +405,42 @@ You already host the tracker on GitHub Pages, so this is probably set already. I
 
 ---
 
-## Step 8: Add your settings to the website
+## Step 8: Double-check the key
 
-**Why:** Right now the app doesn't know which Firebase project is yours. Until you do this step, the site shows the message "Live scores are not switched on yet".
+**Why:** Your settings are already in the app. But they were copied from a screenshot, and in screenshots some characters look almost identical: capital **I** and small **l**, letter **O** and number **0**. If even one character of the `apiKey` is wrong, sign-in and live scores won't work. Pasting the key straight from Firebase removes any doubt. It takes two minutes.
 
-You can edit the file directly on GitHub; no extra software is needed.
+Do this after Step 7, once the files are on GitHub.
 
-- [ ] **1.** In your repository, click the **js** folder, then **firebase-config.js**.
-- [ ] **2.** Click the **pencil icon ✏** (top right of the file) to edit.
-- [ ] **3.** You'll see:
-
-  ```js
-  export const firebaseConfig = {
-    apiKey: "REPLACE_ME",
-    authDomain: "REPLACE_ME.firebaseapp.com",
-    projectId: "REPLACE_ME",
-    appId: "REPLACE_ME"
-  };
-  ```
-
-- [ ] **4.** Replace each `REPLACE_ME` with the matching value from your notepad (Step 3). It should end up looking like this, with your own values:
+- [ ] **1.** Open your [Project settings](https://console.firebase.google.com/project/greystones-rugby-club-youth/settings/general), scroll to **Your apps**, and click **GRFC Rugby tracker**.
+- [ ] **2.** Under **SDK setup and configuration**, choose **Config**.
+- [ ] **3.** Find the line starting `apiKey:`. Carefully select **only the characters between the quote marks**, starting at `AIza` and ending just before the closing `"`. Copy them (**Ctrl+C** or **Cmd+C**).
+- [ ] **4.** In a new browser tab, open your GitHub repository → click **firebase-config.js** → click the **pencil icon ✏**.
+- [ ] **5.** You'll see:
 
   ```js
   export const firebaseConfig = {
-    apiKey: "AIzaSyB1a2b3c4d5e6f7g8h9i0jKlMnOpQrStUv",
-    authDomain: "greystones-u14.firebaseapp.com",
-    projectId: "greystones-u14",
-    appId: "1:123456789012:web:abc123def456"
+    apiKey: "AIzaSyCEIXAhU213Z_hbpxaOOxLoZ2_XCcAHeTU",
+    authDomain: "greystones-rugby-club-youth.firebaseapp.com",
+    projectId: "greystones-rugby-club-youth",
+    appId: "1:544038353341:web:bfc816757bab741ab87ad4"
   };
   ```
 
-  **Rules for editing:**
-  - **Keep the quote marks** `"` around each value.
-  - **Keep the comma** at the end of each line, except the `appId` line.
-  - For `authDomain`, replace the **whole** line's value, including `.firebaseapp.com`, with what Firebase gave you.
-  - Leave the lines starting with `//` alone. They're notes for humans, ignored by the app.
-- [ ] **5.** Click **Commit changes…**, then **Commit changes** again.
+- [ ] **6.** On the `apiKey` line, select everything **between the quote marks** and paste the key you copied (**Ctrl+V** or **Cmd+V**). Make sure:
+  - the quote marks `"` are still there, on both sides,
+  - the comma `,` is still at the end of the line.
+- [ ] **7.** Click **Commit changes…**, then **Commit changes** again.
+  - If GitHub says there are **no changes to commit**, the key was already exactly right. Nothing more to do.
 
 **What happens next:** GitHub takes **one to three minutes** to update the live site. You can watch progress on the repository's **Actions** tab; a green tick means it's done.
+
+**Leave the other three lines alone.** They contain only plain words and numbers, which were easy to read correctly.
 
 ---
 
 ## Step 9: Tell Firebase your website's address
+
+**Shortcut:** [open Authentication settings](https://console.firebase.google.com/project/greystones-rugby-club-youth/authentication/settings) and skip to step 2 below.
 
 **Why:** Firebase only allows sign-in from websites you've approved. This adds your GitHub Pages address to that list.
 
@@ -436,7 +463,7 @@ Do this at home before the first match. You'll need your computer and a phone. I
 - [ ] **1.** On your phone, open your tracker's address.
 - [ ] **2.** Check you see three tabs: **Live**, **Results** and **League**.
 - [ ] **3.** Check there's **no** red message saying "Live scores are not switched on yet".
-  - If there is, Step 8 hasn't taken effect. Wait two minutes, then pull down to refresh. If it's still there, re-check Step 8.
+  - If there is, the site hasn't updated yet. Wait two minutes, then pull down to refresh. If it's still there, check that `firebase-config.js` on GitHub has no `REPLACE_ME` in it.
 - [ ] **4.** The Live tab should say "No match in progress for this squad".
 
 ### Test 2: A coach can sign in
@@ -552,9 +579,9 @@ Do this at home before the first match. You'll need your computer and a phone. I
 
 ### Updating fixtures and league tables
 
-All fixtures and tables live in one file: `data/fixtures.json`. You can edit it on GitHub, just like Step 8.
+All fixtures and tables live in one file: `fixtures.json`. You can edit it on GitHub, just like Step 8.
 
-1. In your repository, open **data** → **fixtures.json** → click the **pencil ✏**.
+1. In your repository, click **fixtures.json** → click the **pencil ✏**.
 2. Make your change, following the patterns below.
 3. Click **Commit changes**. The site updates in one to three minutes.
 
@@ -609,7 +636,7 @@ If you do commit a mistake, the app still works, but shows "Fixtures could not b
 
 ### Starting a new season
 
-1. Update `data/fixtures.json` with the new fixtures, tables and squad names.
+1. Update `fixtures.json` with the new fixtures, tables and squad names.
 2. Results from the previous season stay in the **Results** tab until you delete them. To clear them: in **Firestore Database → Data**, click the `results` collection, then the **⋮** menu → **Delete collection**.
 
 ---
@@ -618,14 +645,16 @@ If you do commit a mistake, the app still works, but shows "Fixtures could not b
 
 | What you see | What it means | How to fix it |
 |---|---|---|
-| "Live scores are not switched on yet" | The app can't find your Firebase settings. | Check Step 8: no `REPLACE_ME` left, quotes and commas intact. Wait two minutes after committing, then refresh. |
-| A blank page, or just "Loading…" | Usually a typo in `firebase-config.js`, such as a missing quote or comma. | Compare your file carefully with the example in Step 8, character by character. |
+| **Stuck on Loading**: the page shows only "Loading…" in plain black text, with no colours | The browser can't find the app's other files, usually because they're in a different place from `index.html`. | Open your repository on GitHub. All 22 files must sit side by side next to `index.html`, not inside any folders. Upload any that are missing or in the wrong place, wait two minutes, then refresh. |
+| "Live scores are not switched on yet" | The app can't find your Firebase settings. | Check `firebase-config.js` on GitHub matches the example in Step 8, with quotes and commas intact. Wait two minutes after committing, then refresh. |
+| A blank page, or just "Loading…" | Usually a typo in `firebase-config.js`, such as a missing quote or comma. | Compare your file carefully with the example in Step 8. |
+| "This site's Firebase key is not right", or live scores never load | One character of the `apiKey` is wrong. | Do Step 8 again, pasting the key straight from Firebase. |
 | "This account is not on the coaches list" | The sign-in worked, but the account isn't in `admins`. | In Step 6c, the **Document ID** must be the coach's **User UID** exactly, and the collection must be named `admins`. |
 | "That email and password do not match a coach account" | Wrong details, or the account doesn't exist. | Check **Authentication → Users**. Use **Forgot password?** to reset. |
 | "The last change was refused by the server" | The database rejected a change. | Re-do Step 5b (paste and **Publish** the rules again), and check the coach is in `admins`. |
 | Parents don't see updates | The coach's phone has no signal, or the parent's page is stale. | Look at the coach's status line (Offline / Saving / All changes saved). Ask parents to refresh. |
 | Sign-in fails after the optional security step | The website restriction doesn't match your address. | Check it's exactly `https://yourname.github.io/*`. |
-| "Fixtures could not be loaded" | A typo in `data/fixtures.json`. | Paste it into jsonlint.com to find the line, and fix it. |
+| "Fixtures could not be loaded" | A typo in `fixtures.json`. | Paste it into jsonlint.com to find the line, and fix it. |
 | No password reset email | It's probably in spam. | Check the spam folder for an email from `…firebaseapp.com`. |
 | Forgot the team sheet passphrase | By design, it can't be recovered. | Tap **Forgot passphrase – erase sheet from this device**, then set a new one and re-enter or paste the sheet. |
 | The old link still shows the old tracker | Your phone has saved an old copy. | Refresh the page. The old address now sends people to the new app. |
@@ -666,7 +695,7 @@ If you have Python installed (it comes with most Macs), you can run the app on y
 2. Type `python3 -m http.server 8000` and press Enter.
 3. Open **http://localhost:8000** in your browser.
 
-Before Firebase is connected, this runs in **preview mode**: any email signs you in, and data stays in that browser. Open a second tab on the Live view to watch it update as you score. Preview mode only switches on at `localhost`; it never runs on the real website.
+Because your Firebase settings are already filled in, this copy connects to your **real** project. Scores you enter will appear on the live site too, so tap **New match** afterwards to clear any test. (Firebase allows `localhost` automatically, so sign-in works here without extra set-up.)
 
 Double-clicking `index.html` won't work. Browsers block apps opened straight from files for security reasons.
 
@@ -691,7 +720,7 @@ It's good practice to tell parents that the live score page exists, and that it 
 
 ### Updating the built-in tools (for someone technical)
 
-`vendor/firebase.js` is Firebase version 13.3.0, and `vendor/jspdf.umd.min.js` is jsPDF version 4.2.1. Updates aren't urgent, but a technical volunteer can refresh them once a season.
+`firebase.js` is Firebase version 13.3.0, and `jspdf.umd.min.js` is jsPDF version 4.2.1. Updates aren't urgent, but a technical volunteer can refresh them once a season.
 
 1. In an empty folder, run:
 
@@ -699,12 +728,12 @@ It's good practice to tell parents that the live score page exists, and that it 
    npm install firebase jspdf esbuild
    ```
 
-2. Create a file `fb-entry.js` that re-exports the functions listed at the top of `js/store.js`.
+2. Create a file `fb-entry.js` that re-exports the functions listed at the top of `store.js`.
 3. Run:
 
    ```
-   npx esbuild fb-entry.js --bundle --format=esm --minify --outfile=vendor/firebase.js
+   npx esbuild fb-entry.js --bundle --format=esm --minify --outfile=firebase.js
    ```
 
-4. Copy `node_modules/jspdf/dist/jspdf.umd.min.js` into `vendor/`.
+4. Copy `node_modules/jspdf/dist/jspdf.umd.min.js` next to the other files.
 5. Test using preview mode before uploading.

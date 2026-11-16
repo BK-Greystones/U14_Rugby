@@ -1,7 +1,7 @@
-@font-face{font-family:Barlow;font-weight:400;font-display:swap;src:url(../fonts/barlow-latin-400-normal.woff2) format('woff2')}
-@font-face{font-family:Barlow;font-weight:600;font-display:swap;src:url(../fonts/barlow-latin-600-normal.woff2) format('woff2')}
-@font-face{font-family:'Barlow Condensed';font-weight:500;font-display:swap;src:url(../fonts/barlow-condensed-latin-500-normal.woff2) format('woff2')}
-@font-face{font-family:'Barlow Condensed';font-weight:700;font-display:swap;src:url(../fonts/barlow-condensed-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:Barlow;font-weight:400;font-display:swap;src:url(barlow-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:Barlow;font-weight:600;font-display:swap;src:url(barlow-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-weight:500;font-display:swap;src:url(barlow-condensed-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Barlow Condensed';font-weight:700;font-display:swap;src:url(barlow-condensed-latin-700-normal.woff2) format('woff2')}
 
 :root{--bg:#e8eee4;--ink:#13301f;--card:#f7faf4;--line:#b9c9b5;--home:#a86f00;--away:#1d6fa5;--homebg:#f4dfa8;--awaybg:#c6e0f2;--mute:#4f6656;--warn:#b3261e;--ok:#2e7d32;
   --cond:'Barlow Condensed','Arial Narrow',sans-serif;color-scheme:light}
