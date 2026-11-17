@@ -419,9 +419,9 @@ Do this after Step 7, once the files are on GitHub.
 
   ```js
   export const firebaseConfig = {
-    apiKey: "AIzaSyCEIXAhU213Z_hbpxaOOxLoZ2_XCcAHeTU",
-    authDomain: "greystones-rugby-club-youth.firebaseapp.com",
-    projectId: "greystones-rugby-club-youth",
+    apiKey: "AIz*******************eTU",
+    authDomain: "g*******es-r***y-c***b-y**h.firebaseapp.com",
+    projectId: "g*******es-r***y-c***b-y**h",
     appId: "1:544038353341:web:bfc816757bab741ab87ad4"
   };
   ```
