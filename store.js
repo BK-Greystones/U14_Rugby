@@ -37,7 +37,13 @@ async function firebaseStore() {
     watchResults: (cb, err) => fb.onSnapshot(fb.collection(db, 'results'), (q) => cb(q.docs.map((d) => d.data())), err),
     saveMatch: (tk, data) => fb.setDoc(fb.doc(db, 'matches', tk), data),
     saveResult: (r) => fb.setDoc(fb.doc(db, 'results', r.id), r),
-    deleteResult: (id) => fb.deleteDoc(fb.doc(db, 'results', id))
+    deleteResult: (id) => fb.deleteDoc(fb.doc(db, 'results', id)),
+    // League page links set by coaches (read by the league robot too).
+    watchLeague: (tk, cb) => fb.onSnapshot(fb.doc(db, 'leagues', tk), (s) => cb(s.exists() ? s.data() : null), () => cb(null)),
+    saveLeague: (tk, url) => fb.setDoc(fb.doc(db, 'leagues', tk), { url, upd: Date.now() }),
+    // Optional GitHub key for one-tap league updates. Only coaches can read it.
+    async getGithubToken() { const s = await fb.getDoc(fb.doc(db, 'private', 'github')); return s.exists() ? s.data().token || null : null; },
+    setGithubToken: (t) => (t ? fb.setDoc(fb.doc(db, 'private', 'github'), { token: t, upd: Date.now() }) : fb.deleteDoc(fb.doc(db, 'private', 'github')))
   };
 }
 
@@ -59,6 +65,10 @@ function previewStore() {
     watchResults: (cb) => on('results', (d) => cb(Object.values(d || {}))),
     async saveMatch(tk, data) { write('match-' + tk, data); },
     async saveResult(r) { const all = read('results') || {}; all[r.id] = r; write('results', all); },
-    async deleteResult(id) { const all = read('results') || {}; delete all[id]; write('results', all); }
+    async deleteResult(id) { const all = read('results') || {}; delete all[id]; write('results', all); },
+    watchLeague: (tk, cb) => on('league-' + tk, cb),
+    async saveLeague(tk, url) { write('league-' + tk, { url, upd: Date.now() }); },
+    async getGithubToken() { return (read('github') || {}).token || null; },
+    async setGithubToken(t) { if (t) write('github', { token: t }); else { localStorage.removeItem(K + 'github'); emit('github'); } }
   };
 }

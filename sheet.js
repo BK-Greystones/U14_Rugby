@@ -209,7 +209,7 @@ async function buildPdf() {
   await loadJsPdf();
   const m = ctx.match(), d = ctx.vault().data;
   const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4' });
-  const PW = 595.28, PH = 841.89, L = 32, W = PW - 2 * L, RH = 12.5, GREEN = [13, 59, 30], LIGHT = [223, 241, 223];
+  const PW = 595.28, PH = 841.89, L = 32, W = PW - 2 * L, RH = 12.5, GREEN = [17, 130, 59], LIGHT = [227, 244, 231];
   let y = 40;
   const font = (sz, bold) => { doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.setFontSize(sz); };
   const fit = (v, w) => { v = v == null ? '' : String(v); if (doc.getTextWidth(v) <= w) return v; while (v && doc.getTextWidth(v + '…') > w) v = v.slice(0, -1); return v + '…'; };
@@ -235,7 +235,7 @@ async function buildPdf() {
 
   // Title and match details
   font(16, true); doc.setTextColor(...GREEN); doc.text('Youth Competition Team Sheet', PW / 2, y, { align: 'center' }); y += 12;
-  doc.setDrawColor(...GREEN); doc.setLineWidth(1); doc.line(L, y, L + W, y); y += 14;
+  doc.setDrawColor(212, 160, 23); doc.setLineWidth(1.5); doc.line(L, y, L + W, y); y += 14;
   const kv = (k, v, x, w) => { font(8.5, true); doc.text(k, x, y); const kw = doc.getTextWidth(k); font(8.5); doc.text(fit(v, w - kw), x + kw + 4, y); };
   kv('Competition:', m.comp, L, 200); kv('Fixture:', name(m, 0) + '  V  ' + name(m, 1), L + 260, 230); y += 13;
   kv('Date:', dmy(m.date), L, 120); kv('KO Time:', m.ko, L + 130, 60); kv('Venue:', m.venue, L + 260, 230); y += 13;

@@ -57,6 +57,26 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // League page link for each squad, set by coaches on the League tab.
+    // Anyone can read it (the league robot reads it without signing in).
+    match /leagues/{team} {
+      allow read: if true;
+      allow write: if isAdmin() && team.matches('^[a-z0-9-]{1,20}$')
+                   && request.resource.data.keys().hasOnly(['url', 'upd'])
+                   && request.resource.data.url is string && request.resource.data.url.size() <= 200
+                   && request.resource.data.url.matches('^https://[a-z0-9.-]*sportlomo[.]com/league/[0-9]+/?([?][A-Za-z0-9_=&%.-]*)?$')
+                   && num(request.resource.data.upd, 0, 9000000000000000);
+    }
+
+    // Optional GitHub key for one-tap league updates. Only coaches can see or change it.
+    match /private/github {
+      allow read, delete: if isAdmin();
+      allow create, update: if isAdmin()
+                            && request.resource.data.keys().hasOnly(['token', 'upd'])
+                            && str(request.resource.data.token, 255)
+                            && num(request.resource.data.upd, 0, 9000000000000000);
+    }
+
     // Coaches list. Each document ID is a coach's Firebase user ID.
     // Managed only from the Firebase console; a coach can check their own entry.
     match /admins/{uid} {

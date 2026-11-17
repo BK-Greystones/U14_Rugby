@@ -1,0 +1,58 @@
+# League robot schedule. This file must live at .github/workflows/update-league.yml
+# in your repository (SETUP.md, Step 11 shows how to create it).
+#
+# It runs:
+#   - every day at 07:00 and 21:00 UTC (8am and 10pm Irish summer time),
+#   - every 2 hours on Saturday and Sunday afternoons, when games are played,
+#   - whenever a coach taps "Get latest results now" in the app, or someone
+#     clicks "Run workflow" on GitHub.
+# It only saves fixtures.json when the league page has something new.
+
+name: Update league results
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7,21 * * *"
+    - cron: "15 12-20/2 * * 0,6"
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: update-league
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Get the site files
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Read the league pages
+        run: node update-league.mjs
+
+      - name: Save any changes
+        if: success() || failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- fixtures.json; then
+            echo "Nothing new to save."
+            exit 0
+          fi
+          git config user.name "league-robot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add fixtures.json
+          git commit -m "League update from the Leinster Rugby website"
+          git push
+          gh api -X POST "repos/${{ github.repository }}/pages/builds" >/dev/null 2>&1 || true
+          echo "Saved. The site will show the new results within a few minutes."

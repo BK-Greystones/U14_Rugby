@@ -3,12 +3,15 @@ import * as M from './model.js';
 import { openStore } from './store.js';
 import { Vault, purgeExpired, legacyKeys, wipeLegacy, hasLegacySheet } from './vault.js';
 import { initSheet, renderSheet, shRes, playerName, sheetTeam, lockSheet } from './sheet.js';
+import { initLeague, leaguePanel, resetLeagueAdmin, LEAGUE_URL } from './league.js';
 
 /* ---------- state ---------- */
 let store, FX = { club: '', highlight: '', teams: {} }, TK = [];
 let role = 'viewer', user = null, view = '';
 let AT = '', LT = '', LGT = '';            // squad being managed / watched live / shown in League
 const MS = {}, META = {}, vaults = {};     // matches, snapshot metadata, encrypted sheets
+const LINKS = {};                          // league links set by coaches in the app
+const linkFor = (k) => LINKS[k] || ((FX.teams[k] || {}).leagueUrl || '');
 let m = null, results = [], saveT = null, lastSaid = '', hiddenAt = 0;
 const notes = new Map();
 
@@ -277,7 +280,8 @@ function drawLeague() {
   (T.fixtures || []).forEach((f) => { const g = groups[groups.length - 1]; if (g && g.date === f.date) g.list.push(f); else groups.push({ date: f.date, list: [f] }); });
   fill('lg-list',
     h('div', { class: 'lsw' }, TK.map((k) => h('button', { 'aria-pressed': String(k === LGT), dataset: { lg: k } }, h('span', { text: squad(k) })))),
-    T.leagueUrl ? h('div', { class: 'foot' }, h('a', { class: 'abtn', href: safeUrl(T.leagueUrl), target: '_blank', rel: 'noopener noreferrer', text: 'Open live league page (Leinster Rugby)' })) : null,
+    role === 'admin' && store && store.mode !== 'unconfigured' ? leaguePanel(LGT) : null,
+    linkFor(LGT) ? h('div', { class: 'foot' }, h('a', { class: 'abtn', href: safeUrl(linkFor(LGT)), target: '_blank', rel: 'noopener noreferrer', text: 'Open live league page (Leinster Rugby)' })) : null,
     h('div', { class: 'card mt' }, h('h3', { text: T.competition || '' }),
       h('table', { class: 'lt' }, h('tr', null, ['#', 'Team', 'P', 'W', 'D', 'L', 'Pts'].map((t) => h('th', { text: t }))),
         (T.table || []).map((r, i) => h('tr', { class: hl && r.team.toLowerCase().includes(hl) ? 'me' : null },
@@ -290,7 +294,8 @@ function drawLeague() {
 }
 function validFixtures(d) {
   const s = (v, n) => (typeof v === 'string' ? v.slice(0, n) : '');
-  const out = { club: s(d && d.club, 60), highlight: s(d && d.highlight, 40), teams: {} };
+  const out = { club: s(d && d.club, 60), highlight: s(d && d.highlight, 40), teams: {},
+    updatedAt: d && /^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/.test(d.updatedAt || '') ? d.updatedAt : '' };
   for (const [k, t] of Object.entries((d && d.teams) || {})) {
     if (!/^[a-z0-9-]{1,20}$/.test(k) || !t) continue;
     out.teams[k] = { name: s(t.name, 40) || k, competition: s(t.competition, 80), leagueUrl: s(t.leagueUrl, 300), asOf: s(t.asOf, 30),
@@ -303,12 +308,26 @@ function validFixtures(d) {
   return out;
 }
 
+// Re-read fixtures.json (after the league robot has updated it).
+async function reloadFixtures() {
+  try {
+    const r = await fetch('fixtures.json?v=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return FX.updatedAt;
+    const nx = validFixtures(await r.json());
+    if (!Object.keys(nx.teams).length) return FX.updatedAt;
+    FX = nx; note('fx');
+    drawLeague(); if (role === 'admin' && m) fillForm();
+  } catch {}
+  return FX.updatedAt;
+}
+
 /* ---------- views & tabs ---------- */
 function show(v) {
   if (role !== 'admin' && ['game', 'score', 'sheet'].includes(v)) v = 'live';
   view = v;
   ['game', 'score', 'sheet', 'live', 'res', 'league'].forEach((x) => { $('v-' + x).hidden = x !== v; });
   if (v === 'sheet') renderSheet();
+  if (v === 'league') drawLeague();
   $('a-sw').hidden = !(role === 'admin' && ['game', 'score', 'sheet'].includes(v));
   document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-current', b.dataset.v === v ? 'page' : 'false'));
 }
@@ -368,7 +387,7 @@ async function onAuth(u) {
   const was = role;
   role = u && (await checkAdmin(u.uid)) ? 'admin' : 'viewer';
   note('auth', u && role !== 'admin' ? 'You are signed in as ' + u.email + ', but this account is not on the coaches list. Ask the site owner to add it (SETUP.md, step 4).' : '', { bad: true });
-  if (role !== 'admin') lockAll();
+  if (role !== 'admin') { lockAll(); resetLeagueAdmin(); }
   if (role === 'admin' && !m) { m = MS[AT] || (MS[AT] = M.blank(AT)); }
   mkTabs(); drawAcct(); fillForm(); legacyNote();
   show(role === 'admin' && was !== 'admin' ? 'game' : (view || 'live'));
@@ -406,6 +425,7 @@ async function boot() {
   $('a-board').append(...board('a')); $('l-board').append(...board('l'));
   setupScoring(); setupForm(); setupLogin();
   initSheet({ vault, match: () => m, squadName: () => squad(AT), ask, applyDetails, defTeam, onChange: draw, ourSide: () => ourSide(m) });
+  initLeague({ store, fx: () => FX, squad, linkFor, savedLink: (k) => LINKS[k] || '', reloadFixtures, redraw: () => { if (view === 'league') drawLeague(); } });
 
   $('tabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) show(b.dataset.v); });
   $('a-sw').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) switchTeam(b.dataset.at); });
@@ -443,6 +463,7 @@ async function boot() {
     if (k === AT) { m = x; if (role === 'admin') fillForm(); }
     draw();
   }, () => note('load', 'Could not load live scores. Refresh to try again.', { bad: true })));
+  TK.forEach((k) => store.watchLeague(k, (d) => { LINKS[k] = d && LEAGUE_URL.test(d.url || '') ? d.url : ''; if (view === 'league') drawLeague(); }));
   store.watchResults((list) => { results = list.map(M.sanitizeResult).filter(Boolean); drawRes(); }, () => {});
   drawRes();
   mkTabs(); show('live');
