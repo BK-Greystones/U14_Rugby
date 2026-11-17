@@ -583,7 +583,7 @@ GitHub only runs robots whose instructions are in a special folder called `.gith
 
 - [ ] **6.** Wait two minutes, then open your tracker's **League** tab. The table should show "Table and fixtures as of" today's date.
 
-**If the run shows a red ✗:** click into it and read the **Read the league pages** step. It says which squad's page couldn't be read and why. The most common reason is a wrong league link: fix it on the League tab (see "Changing a squad's league" below), then run again. Squads that were read successfully are still saved.
+**If the run shows a red ✗:** click into it and read the **Read the league pages** step. It says which squad's page couldn't be read and why. If the problem is the page itself, the log also lists the first lines of text the robot saw on that page, which is what's needed to adjust the robot. The most common reason is a wrong league link: fix it on the League tab (see "Changing a squad's league" below), then run again. Squads that were read successfully are still saved.
 
 ---
 

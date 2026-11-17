@@ -42,7 +42,6 @@ function tables(html) {
   return [...strip(html).matchAll(/<table\b[\s\S]*?<\/table>/gi)].map((t) =>
     [...t[0].matchAll(/<tr\b[\s\S]*?<\/tr>/gi)].map((r) => [...r[0].matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gi)].map((c) => cellText(c[1]))));
 }
-const SCORE = /(\d+)?(?:\s*-\s*\d*)?\s*\bV\b\s*(\d+)?(?:\s*-\s*\d*)?/;
 const DATE = /\b(\d{1,2})-([A-Za-z]{3})-(\d{2}|\d{4})(?:\s+(\d{1,2}):(\d{2}))?/;
 
 function parseDate(s) {
@@ -54,82 +53,163 @@ function parseDate(s) {
   return { date, time };
 }
 
-export function parseLeague(html) {
-  const lines = htmlLines(html);
-  const title = (html.match(/<h[12]\b[^>]*>([\s\S]*?)<\/h[12]>/gi) || []).map(cellText)
-    .find((t) => /U\d{2}|league|grading|group|grp|div/i.test(t) && t.length < 120) || '';
+// Scores appear as "12 (2) V 14 (1)" on Leinster Rugby (league points in
+// brackets) and as "42-11 V 12-2" on some other SportLoMo sites.
+const SCORE_LINE = /^(\d{1,3})\s*(?:\(\s*-?\d+\s*\)|-\s*\d*)?\s*V\s*(\d{1,3})\s*(?:\(\s*-?\d+\s*\)|-\s*\d*)?$/i;
+const BLANK_SCORE = /^[-–\s]*V?[-–\s]*$/i;
+const DAY_LINE = /^(?:[A-Za-z]{3,9},?\s+)?(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+const TIME_LINE = /^(\d{1,2}):(\d{2})$/;
+const SKIP_LINE = /^(team\s*sheet|\**\s*referee\b.*|na|venue:.*|more\s*\+?|-)$/i;
+const FOOTER = /powered by|scroll to top|copyright|©|follow us|privacy|cookie/i;
 
-  // 1. The results grid ("matrix"): teams across the top and down the side,
-  //    each square holding "42-11 V 12-2" and "09-Nov-25 12:00".
-  let teams = [], fixtures = [];
+function pageTitle(html) {
+  const heads = (html.match(/<h[1-4]\b[^>]*>([\s\S]*?)<\/h[1-4]>/gi) || []).map(cellText);
+  const lt = heads.find((t) => /^league table\b/i.test(t));
+  if (lt) return lt.replace(/^league table\s*[:\-–]?\s*/i, '').trim();
+  return heads.find((t) => /U\d{2}|league|grading|group|grp|div/i.test(t) && !/^league$/i.test(t) && t.length < 120) || '';
+}
+
+// League table as a real HTML table with a header row containing Team and Pts.
+function tableFromHtml(html) {
+  for (const t of tables(html)) {
+    const hi = t.findIndex((r) => r.some((c) => /^team$/i.test(c)) && r.some((c) => /^pts$/i.test(c)));
+    if (hi < 0) continue;
+    const head = t[hi].map((c) => c.toLowerCase());
+    const col = (...names) => head.findIndex((c) => names.includes(c));
+    const ix = { pos: col('pos', 'position', '#'), team: col('team'), p: col('pld', 'p', 'played', 'gp'), w: col('w', 'won'), d: col('d', 'drawn'), l: col('l', 'lost'), pts: col('pts', 'points') };
+    if (ix.team < 0 || ix.pts < 0) continue;
+    const num = (r, i) => (i >= 0 && /^-?\d+$/.test(r[i] || '') ? +r[i] : 0);
+    const rows = t.slice(hi + 1).filter((r) => r[ix.team] && r.length >= head.length - 1 && /^-?\d+$/.test(r[ix.pts] || ''))
+      .map((r, n) => ({ pos: num(r, ix.pos) || n + 1, team: r[ix.team], p: num(r, ix.p), w: num(r, ix.w), d: num(r, ix.d), l: num(r, ix.l), pts: num(r, ix.pts) }));
+    if (rows.length >= 2) return rows.sort((a, b) => a.pos - b.pos);
+  }
+  return [];
+}
+
+// Fixture list: a date line, then for each game: time, home, [score], away, venue, [comment].
+function fixturesFromList(html, teams) {
+  const lines = htmlLines(html.replace(/<table\b[\s\S]*?<\/table>/gi, ' '));
+  const known = new Set(teams);
+  const isTeam = (s) => !!s && (known.size ? known.has(s) : !SCORE_LINE.test(s) && !TIME_LINE.test(s) && !DAY_LINE.test(s) && !SKIP_LINE.test(s));
+  const out = [];
+  let date = '';
+  for (let i = 0; i < lines.length; i++) {
+    const d = lines[i].match(DAY_LINE);
+    if (d) { date = d[3] + '-' + d[2].padStart(2, '0') + '-' + d[1].padStart(2, '0'); continue; }
+    const tm = lines[i].match(TIME_LINE);
+    if (!tm || !date) continue;
+    let k = i + 1;
+    const home = lines[k++];
+    if (!isTeam(home)) continue;
+    let score = '';
+    const sc = (lines[k] || '').match(SCORE_LINE);
+    if (sc) { score = sc[1] + '-' + sc[2]; k++; } else if (BLANK_SCORE.test(lines[k] || 'x') && !isTeam(lines[k])) k++;
+    const away = lines[k++];
+    if (!isTeam(away) || away === home) continue;
+    let venue = '', note = '';
+    const stop = k + 6;
+    for (; k < lines.length && k < stop; k++) {
+      const l = lines[k];
+      if (TIME_LINE.test(l) || DAY_LINE.test(l) || FOOTER.test(l)) break;
+      if (SKIP_LINE.test(l) || BLANK_SCORE.test(l)) continue;
+      if (/^\**\s*comment\b/i.test(l)) { const c = l.replace(/^\**\s*comment\**\s*:?\s*/i, ''); if (c && !/^na$/i.test(c) && !note) note = c; continue; }
+      if (!venue && !/^conceded\b/i.test(l)) { venue = l; continue; }
+      if (!note) note = l;
+    }
+    const time = tm[1] === '00' && tm[2] === '00' ? '' : tm[1].padStart(2, '0') + ':' + tm[2];
+    out.push({ date, time, home, away, score: /^conceded/i.test(note) ? '' : score, venue: venue.slice(0, 60), note: note.slice(0, 80) });
+    i = k - 1;
+  }
+  return out;
+}
+
+// Fallback when a page runs a whole game onto one line of text:
+// "15:00 Blackrock College RFC 2 93 (12) V 0 (0) Monkstown FC 2 Stradbrook Team Sheet"
+function fixturesFromFlat(html, teams) {
+  if (teams.length < 2) return [];
+  const flat = htmlLines(html.replace(/<table\b[\s\S]*?<\/table>/gi, ' ')).join(' \u2028 ');
+  const alt = [...teams].sort((a, b) => b.length - a.length).map(esc).join('|');
+  const re = new RegExp('(\\d{1,2}):(\\d{2})[\\s\u2028]+(' + alt + ')[\\s\u2028]+(?:(\\d{1,3})\\s*(?:\\(\\s*-?\\d+\\s*\\))?\\s*V\\s*(\\d{1,3})\\s*(?:\\(\\s*-?\\d+\\s*\\))?[\\s\u2028]+)?(' + alt + ')(?=[\\s\u2028]|$)([\\s\\S]*?)(?=\\d{1,2}:\\d{2}[\\s\u2028]|$)', 'g');
+  const dates = [...flat.matchAll(/(?:^|\s)(?:[A-Za-z]{3,9},?\s+)?(\d{1,2})\/(\d{1,2})\/(\d{4})(?=\s|$)/g)].map((m) => ({ at: m.index, d: m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0') }));
+  const out = [];
+  for (const m of flat.matchAll(re)) {
+    const d = dates.filter((x) => x.at < m.index).pop(); if (!d || m[3] === m[6]) continue;
+    const rest = m[7].split('\u2028').map((x) => x.replace(/\s*team\s*sheet.*$/i, '').trim())
+      .filter((x) => x && !SKIP_LINE.test(x) && !BLANK_SCORE.test(x) && !DAY_LINE.test(x) && !FOOTER.test(x));
+    const first = rest[0] || '';
+    const cq = first.match(/\bconceded by\b.*$/i) || (rest.find((x) => /^conceded\b/i.test(x)) || '').match(/.+/);
+    const conceded = cq ? cq[0].trim() : '';
+    const venue = first.replace(/\s*\bconceded by\b.*$/i, '').trim().slice(0, 60);
+    out.push({ date: d.d, time: m[1] === '00' && m[2] === '00' ? '' : m[1].padStart(2, '0') + ':' + m[2], home: m[3], away: m[6],
+      score: m[4] !== undefined && !conceded ? m[4] + '-' + m[5] : '', venue, note: conceded.slice(0, 80) });
+  }
+  return out;
+}
+
+// Older SportLoMo layout: a results grid with teams across and down.
+function fixturesFromGrid(html) {
   for (const t of tables(html)) {
     if (t.length < 3) continue;
     const head = t[0].slice(1).filter(Boolean);
     const games = [];
     for (const row of t.slice(1)) {
-      const home = row[0];
       row.slice(1).forEach((cell, j) => {
-        const away = t[0][j + 1];
-        if (!home || !away || home === away || !SCORE.test(cell)) return;
+        const home = row[0], away = t[0][j + 1];
+        if (!home || !away || home === away || !/\bV\b/.test(cell)) return;
         const when = parseDate(cell); if (!when) return;
-        const s = cell.match(SCORE);
+        const s = cell.replace(DATE, '').trim().match(/^(\d+)?\s*(?:\(\s*\d+\s*\)|-\s*\d*)?\s*V\s*(\d+)?/i) || [];
         games.push({ date: when.date, time: when.time, home, away, score: s[1] !== undefined && s[2] !== undefined ? s[1] + '-' + s[2] : '', venue: '', note: '' });
       });
     }
-    if (games.length >= 2 && head.length >= 3) { teams = head; fixtures = games; break; }
+    if (games.length >= 2 && head.length >= 3) return { teams: head, games };
   }
-  if (!fixtures.length) return { ok: false, why: 'Could not find the results grid on the league page.' };
-
-  // 2. Venue and "Conceded by …" notes from the fixture list further down.
-  //    A fixture shows as: home team / score / away team / venue / referee.
-  const isTeam = (l) => teams.includes(l);
-  const listLines = htmlLines(html.replace(/<table\b[\s\S]*?<\/table>/gi, ' '));
-  let current = null;
-  for (let i = 0; i < listLines.length; i++) {
-    const l = listLines[i];
-    if (isTeam(l)) {
-      let matched = false;
-      for (let k = i + 1; k <= i + 3 && k < listLines.length; k++) {
-        if (isTeam(listLines[k]) && listLines[k] !== l) {
-          const f = fixtures.find((x) => x.home === l && x.away === listLines[k]);
-          if (f) {
-            current = f; matched = true;
-            const v = listLines[k + 1];
-            const isVenue = v && !/^[-–\d\sV]+$/.test(v) && !/^\**\s*comment/i.test(v) && v.length <= 60;
-            if (isVenue && !f.venue) f.venue = v;
-            i = isVenue ? k + 1 : k;
-          }
-          break;
-        }
-      }
-      if (matched) continue;
-    }
-    const c = l.match(/^\**\s*comment:?\**\s*:?\s*(.+)$/i);
-    if (c && current && !current.note) current.note = c[1].trim().slice(0, 80);
-  }
-
-  // 3. The league table: "1 0 Greystones RFC 6 6 0 0 24".
-  const flat = lines.join(' ');
+  return null;
+}
+function tableFromText(html, teams) {
+  const flat = htmlLines(html).join(' ');
   const hi = flat.search(/\bPld\b[\s\S]{0,40}\bPts\b/i);
   const after = hi >= 0 ? flat.slice(hi) : flat;
-  // Some pages put a "movement" number between the position and the team
-  // name; some don't. Try both and keep whichever gives positions 1, 2, 3…
-  const readTable = (extraCol) => {
+  const read = (extraCol) => {
     const out = [];
     for (const team of teams) {
       const re = new RegExp('(?:^|\\s)(\\d{1,2})\\s+' + (extraCol ? '[-+]?\\d{1,2}\\s+' : '') + esc(team) + '\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(-?\\d+)(?=\\s|$)');
       const q = after.match(re);
       if (q) out.push({ pos: +q[1], team, p: +q[2], w: +q[3], d: +q[4], l: +q[5], pts: +q[6] });
     }
-    const valid = out.every((r) => r.pos >= 1 && r.pos <= teams.length) && new Set(out.map((r) => r.pos)).size >= out.length - 1;
-    return valid ? out : [];
+    return out.every((r) => r.pos >= 1 && r.pos <= teams.length) && new Set(out.map((r) => r.pos)).size >= out.length - 1 ? out : [];
   };
-  const a1 = readTable(true), a2 = readTable(false);
-  const table = (a1.length >= a2.length ? a1 : a2).sort((a, b) => a.pos - b.pos || b.pts - a.pts);
-  if (table.length < Math.min(3, teams.length)) return { ok: false, why: 'Found the fixtures but not the league table.' };
+  const a = read(true), b = read(false);
+  return (a.length >= b.length ? a : b).sort((x, y) => x.pos - y.pos);
+}
 
+export function parseLeague(html) {
+  const competition = pageTitle(html);
+  let table = tableFromHtml(html);
+  let teams = table.map((r) => r.team);
+  let fixtures = fixturesFromList(html, teams);
+  if (fixtures.length < 2) fixtures = fixturesFromFlat(html, teams);
+  if (fixtures.length < 2) {
+    const g = fixturesFromGrid(html);
+    if (g) {
+      fixtures = g.games; teams = teams.length ? teams : g.teams;
+      // venues and notes from the list further down, if there is one
+      const listed = fixturesFromList(html, teams);
+      fixtures.forEach((f) => { const m = listed.find((x) => x.home === f.home && x.away === f.away); if (m) { f.venue = m.venue; f.note = m.note; } });
+      if (!table.length) table = tableFromText(html, teams);
+    }
+  }
+  if (fixtures.length < 2) return { ok: false, why: 'Could not find the list of fixtures on the league page.' };
+  if (table.length < 2) return { ok: false, why: 'Found the fixtures but not the league table.' };
+  // Leinster Rugby lists conceded games without a score; mark them clearly.
   fixtures.sort((a, b) => (a.date + (a.time || '99')).localeCompare(b.date + (b.time || '99')));
-  return { ok: true, competition: title, teams, fixtures, table: table.map(({ pos, ...r }) => r) };
+  return { ok: true, competition, teams, fixtures, table: table.map(({ pos, ...r }) => r) };
+}
+
+// Shown in the robot's log when a page can't be read, to help fix the reader.
+export function describePage(html) {
+  const lines = htmlLines(html);
+  return 'Page title: ' + pageTitle(html) + '\n  Tables found: ' + tables(html).length + ', lines of text: ' + lines.length +
+    '\n  First lines of the page:\n    ' + lines.slice(0, 40).join('\n    ');
 }
 
 /* ---------- reading the league link a coach set in the app ---------- */
@@ -184,14 +264,18 @@ async function main() {
     const url = appLink || t.leagueUrl;
     if (!LEAGUE_URL.test(url || '')) { console.log(`${t.name}: no valid league link, skipped.`); continue; }
     console.log(`${t.name}: reading ${url}${appLink ? ' (link set in the app)' : ''}`);
-    let html;
-    try {
-      const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; GreystonesU14Tracker/1.0; +https://github.com/' + repo + ')' } });
-      if (!r.ok) throw new Error('the page answered ' + r.status);
-      html = await r.text();
-    } catch (e) { console.log(`  ✗ Could not open the page: ${e.message}`); failed++; continue; }
+    let html = '', why = '';
+    for (const ua of ['Mozilla/5.0 (compatible; GreystonesU14Tracker/1.0; +https://github.com/' + repo + ')',
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36']) {
+      try {
+        const r = await fetch(url, { headers: { 'User-Agent': ua, Accept: 'text/html,application/xhtml+xml', 'Accept-Language': 'en-IE,en;q=0.9' } });
+        if (r.ok) { html = await r.text(); break; }
+        why = 'the website answered with error ' + r.status;
+      } catch (e) { why = e.message; }
+    }
+    if (!html) { console.log(`  ✗ Could not open the page: ${why}. Nothing was changed for this squad.`); failed++; continue; }
     const res = parseLeague(html);
-    if (!res.ok) { console.log('  ✗ ' + res.why + ' Nothing was changed for this squad.'); failed++; continue; }
+    if (!res.ok) { console.log('  ✗ ' + res.why + ' Nothing was changed for this squad.\n  ' + describePage(html)); failed++; continue; }
     const played = res.fixtures.filter((f) => f.score).length;
     console.log(`  ✓ ${res.fixtures.length} fixtures (${played} with scores), ${res.table.length} teams in the table.`);
     // Keep venues typed in by hand if the page didn't give one.
