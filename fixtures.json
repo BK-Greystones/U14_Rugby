@@ -1,7 +1,7 @@
 {
   "club": "Greystones RFC",
   "highlight": "Greystones",
-  "updatedAt": "2026-11-17T12:23:20.601Z",
+  "updatedAt": "2026-11-17T21:43:23.249Z",
   "teams": {
     "kb": {
       "name": "Killer Bees",
@@ -64,9 +64,9 @@
         {"date": "2026-11-15", "time": "11:00", "home": "Stillorgan-Rathfarnham", "away": "Blackrock College RFC", "score": "65-39", "venue": "Monkstown", "note": ""},
         {"date": "2026-11-15", "time": "12:00", "home": "Greystones RFC", "away": "Westmanstown", "score": "35-5", "venue": "Greystones", "note": ""},
         {"date": "2026-11-15", "time": "12:00", "home": "Newbridge", "away": "Birr", "score": "30-0", "venue": "Newbridge", "note": ""},
-        {"date": "2026-11-20", "time": "", "home": "De La Salle Palmerston", "away": "Blackrock College RFC", "score": "", "venue": "DLSP", "note": ""},
         {"date": "2026-11-20", "time": "", "home": "Greystones RFC", "away": "Newbridge", "score": "", "venue": "Greystones", "note": ""},
-        {"date": "2026-11-20", "time": "", "home": "Malahide RFC", "away": "Westmanstown", "score": "", "venue": "Malahide", "note": ""},
+        {"date": "2026-11-22", "time": "10:30", "home": "Malahide RFC", "away": "Westmanstown", "score": "", "venue": "Malahide", "note": ""},
+        {"date": "2026-11-22", "time": "12:15", "home": "De La Salle Palmerston", "away": "Blackrock College RFC", "score": "", "venue": "DLSP", "note": ""},
         {"date": "2026-11-22", "time": "12:30", "home": "Stillorgan-Rathfarnham", "away": "Birr", "score": "", "venue": "Heavey Technology Park", "note": ""},
         {"date": "2026-11-27", "time": "", "home": "Blackrock College RFC", "away": "Birr", "score": "", "venue": "Blackrock", "note": ""},
         {"date": "2026-11-27", "time": "", "home": "De La Salle Palmerston", "away": "Westmanstown", "score": "", "venue": "DLSP", "note": ""},
