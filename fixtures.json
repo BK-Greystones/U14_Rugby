@@ -1,13 +1,13 @@
 {
   "club": "Greystones RFC",
   "highlight": "Greystones",
-  "updatedAt": "2026-11-17T21:43:23.249Z",
+  "updatedAt": "2026-11-20T21:39:03.148Z",
   "teams": {
     "kb": {
       "name": "Killer Bees",
       "competition": "Leinster School Youth Boys U14 Grading Grp4",
       "leagueUrl": "https://leinsterrugby.sportlomo.com/league/220427/?user_id=8037",
-      "asOf": "17 Nov 2026",
+      "asOf": "20 Nov 2026",
       "fixtures": [
         {"date": "2026-10-11", "time": "11:00", "home": "Lansdowne FC", "away": "Coolmine", "score": "40-21", "venue": "Lansdowne", "note": ""},
         {"date": "2026-10-11", "time": "12:00", "home": "Greystones RFC", "away": "Monkstown FC", "score": "", "venue": "Greystones", "note": "Conceded by Monkstown FC"},
@@ -25,8 +25,8 @@
         {"date": "2026-11-15", "time": "12:00", "home": "North Meath", "away": "Greystones RFC", "score": "36-7", "venue": "North Meath", "note": ""},
         {"date": "2026-11-15", "time": "12:00", "home": "St. Mary’s College RFC", "away": "Lansdowne FC", "score": "17-14", "venue": "St Marys", "note": ""},
         {"date": "2026-11-20", "time": "", "home": "Greystones RFC", "away": "Lansdowne FC", "score": "", "venue": "Greystones", "note": ""},
-        {"date": "2026-11-20", "time": "", "home": "North Meath", "away": "Skerries RFC", "score": "", "venue": "North Meath", "note": ""},
         {"date": "2026-11-22", "time": "10:00", "home": "Coolmine", "away": "St. Mary’s College RFC", "score": "", "venue": "Coolmine", "note": ""},
+        {"date": "2026-11-22", "time": "12:00", "home": "North Meath", "away": "Skerries RFC", "score": "", "venue": "North Meath", "note": ""},
         {"date": "2026-11-27", "time": "", "home": "St. Mary’s College RFC", "away": "Monkstown FC", "score": "", "venue": "St Marys", "note": "Conceded by Monkstown FC"},
         {"date": "2026-11-27", "time": "", "home": "Greystones RFC", "away": "Coolmine", "score": "", "venue": "Greystones", "note": ""},
         {"date": "2026-11-27", "time": "", "home": "Lansdowne FC", "away": "North Meath", "score": "", "venue": "Lansdowne", "note": ""}
