@@ -1,7 +1,7 @@
 {
   "club": "Greystones RFC",
   "highlight": "Greystones",
-  "updatedAt": "2026-11-22T14:54:20.031Z",
+  "updatedAt": "2026-11-22T21:34:59.999Z",
   "teams": {
     "kb": {
       "name": "Killer Bees",
@@ -26,7 +26,7 @@
         {"date": "2026-11-15", "time": "12:00", "home": "St. Mary’s College RFC", "away": "Lansdowne FC", "score": "17-14", "venue": "St Marys", "note": ""},
         {"date": "2026-11-20", "time": "", "home": "Greystones RFC", "away": "Lansdowne FC", "score": "", "venue": "Greystones", "note": ""},
         {"date": "2026-11-22", "time": "10:00", "home": "Coolmine", "away": "St. Mary’s College RFC", "score": "19-47", "venue": "Coolmine", "note": ""},
-        {"date": "2026-11-22", "time": "12:00", "home": "North Meath", "away": "Skerries RFC", "score": "15-40", "venue": "North Meath", "note": ""},
+        {"date": "2026-11-22", "time": "12:00", "home": "North Meath", "away": "Skerries RFC", "score": "14-40", "venue": "North Meath", "note": ""},
         {"date": "2026-11-27", "time": "", "home": "St. Mary’s College RFC", "away": "Monkstown FC", "score": "", "venue": "St Marys", "note": "Conceded by Monkstown FC"},
         {"date": "2026-11-27", "time": "", "home": "Greystones RFC", "away": "Coolmine", "score": "", "venue": "Greystones", "note": ""},
         {"date": "2026-11-27", "time": "", "home": "Lansdowne FC", "away": "North Meath", "score": "", "venue": "Lansdowne", "note": ""}
