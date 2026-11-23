@@ -1,13 +1,13 @@
 {
   "club": "Greystones RFC",
   "highlight": "Greystones",
-  "updatedAt": "2026-11-22T21:34:59.999Z",
+  "updatedAt": "2026-11-23T21:43:39.883Z",
   "teams": {
     "kb": {
       "name": "Killer Bees",
       "competition": "Leinster School Youth Boys U14 Grading Grp4",
       "leagueUrl": "https://leinsterrugby.sportlomo.com/league/220427/?user_id=8037",
-      "asOf": "22 Nov 2026",
+      "asOf": "23 Nov 2026",
       "fixtures": [
         {"date": "2026-10-11", "time": "11:00", "home": "Lansdowne FC", "away": "Coolmine", "score": "40-21", "venue": "Lansdowne", "note": ""},
         {"date": "2026-10-11", "time": "12:00", "home": "Greystones RFC", "away": "Monkstown FC", "score": "", "venue": "Greystones", "note": "Conceded by Monkstown FC"},
@@ -24,20 +24,20 @@
         {"date": "2026-11-13", "time": "", "home": "Skerries RFC", "away": "Monkstown FC", "score": "", "venue": "Skerries", "note": "Conceded by Monkstown FC"},
         {"date": "2026-11-15", "time": "12:00", "home": "North Meath", "away": "Greystones RFC", "score": "36-7", "venue": "North Meath", "note": ""},
         {"date": "2026-11-15", "time": "12:00", "home": "St. Mary’s College RFC", "away": "Lansdowne FC", "score": "17-14", "venue": "St Marys", "note": ""},
-        {"date": "2026-11-20", "time": "", "home": "Greystones RFC", "away": "Lansdowne FC", "score": "", "venue": "Greystones", "note": ""},
+        {"date": "2026-11-20", "time": "", "home": "Greystones RFC", "away": "Lansdowne FC", "score": "5-29", "venue": "Greystones", "note": ""},
         {"date": "2026-11-22", "time": "10:00", "home": "Coolmine", "away": "St. Mary’s College RFC", "score": "19-47", "venue": "Coolmine", "note": ""},
         {"date": "2026-11-22", "time": "12:00", "home": "North Meath", "away": "Skerries RFC", "score": "14-40", "venue": "North Meath", "note": ""},
         {"date": "2026-11-27", "time": "", "home": "St. Mary’s College RFC", "away": "Monkstown FC", "score": "", "venue": "St Marys", "note": "Conceded by Monkstown FC"},
         {"date": "2026-11-27", "time": "", "home": "Greystones RFC", "away": "Coolmine", "score": "", "venue": "Greystones", "note": ""},
-        {"date": "2026-11-27", "time": "", "home": "Lansdowne FC", "away": "North Meath", "score": "", "venue": "Lansdowne", "note": ""}
+        {"date": "2026-11-29", "time": "11:00", "home": "Lansdowne FC", "away": "North Meath", "score": "", "venue": "Lansdowne", "note": ""}
       ],
       "table": [
         {"team": "St. Mary’s College RFC", "p": 6, "w": 5, "d": 0, "l": 1, "pts": 20},
+        {"team": "Lansdowne FC", "p": 5, "w": 4, "d": 0, "l": 1, "pts": 17},
         {"team": "Skerries RFC", "p": 6, "w": 4, "d": 0, "l": 2, "pts": 16},
-        {"team": "Lansdowne FC", "p": 4, "w": 3, "d": 0, "l": 1, "pts": 13},
         {"team": "North Meath", "p": 5, "w": 3, "d": 0, "l": 2, "pts": 12},
         {"team": "Coolmine", "p": 5, "w": 2, "d": 0, "l": 3, "pts": 8},
-        {"team": "Greystones RFC", "p": 4, "w": 1, "d": 0, "l": 3, "pts": 4},
+        {"team": "Greystones RFC", "p": 5, "w": 1, "d": 0, "l": 4, "pts": 4},
         {"team": "Monkstown FC", "p": 6, "w": 0, "d": 0, "l": 6, "pts": 0}
       ]
     },
@@ -45,7 +45,7 @@
       "name": "The Avengers",
       "competition": "Leinster School Youth Boys U14 Grading Grp2",
       "leagueUrl": "https://leinsterrugby.sportlomo.com/league/220425/?user_id=8037",
-      "asOf": "17 Nov 2026",
+      "asOf": "23 Nov 2026",
       "fixtures": [
         {"date": "2026-10-11", "time": "11:00", "home": "Westmanstown", "away": "Newbridge", "score": "29-42", "venue": "Westmanstown", "note": ""},
         {"date": "2026-10-11", "time": "12:00", "home": "Malahide RFC", "away": "Stillorgan-Rathfarnham", "score": "", "venue": "Malahide", "note": "Conceded by Stillorgan-Rathfarnham"},
@@ -64,26 +64,26 @@
         {"date": "2026-11-15", "time": "11:00", "home": "Stillorgan-Rathfarnham", "away": "Blackrock College RFC", "score": "65-39", "venue": "Monkstown", "note": ""},
         {"date": "2026-11-15", "time": "12:00", "home": "Greystones RFC", "away": "Westmanstown", "score": "35-5", "venue": "Greystones", "note": ""},
         {"date": "2026-11-15", "time": "12:00", "home": "Newbridge", "away": "Birr", "score": "30-0", "venue": "Newbridge", "note": ""},
-        {"date": "2026-11-20", "time": "", "home": "Greystones RFC", "away": "Newbridge", "score": "", "venue": "Greystones", "note": ""},
-        {"date": "2026-11-22", "time": "10:30", "home": "Malahide RFC", "away": "Westmanstown", "score": "", "venue": "Malahide", "note": ""},
+        {"date": "2026-11-20", "time": "", "home": "Greystones RFC", "away": "Newbridge", "score": "19-10", "venue": "Greystones", "note": ""},
+        {"date": "2026-11-22", "time": "10:30", "home": "Malahide RFC", "away": "Westmanstown", "score": "29-12", "venue": "Malahide", "note": ""},
         {"date": "2026-11-22", "time": "12:15", "home": "De La Salle Palmerston", "away": "Blackrock College RFC", "score": "", "venue": "DLSP", "note": ""},
-        {"date": "2026-11-22", "time": "12:30", "home": "Stillorgan-Rathfarnham", "away": "Birr", "score": "", "venue": "Heavey Technology Park", "note": ""},
+        {"date": "2026-11-22", "time": "12:30", "home": "Stillorgan-Rathfarnham", "away": "Birr", "score": "29-34", "venue": "Heavey Technology Park", "note": ""},
         {"date": "2026-11-27", "time": "", "home": "Blackrock College RFC", "away": "Birr", "score": "", "venue": "Blackrock", "note": ""},
         {"date": "2026-11-27", "time": "", "home": "De La Salle Palmerston", "away": "Westmanstown", "score": "", "venue": "DLSP", "note": ""},
         {"date": "2026-11-27", "time": "", "home": "Malahide RFC", "away": "Newbridge", "score": "", "venue": "Malahide", "note": ""},
-        {"date": "2026-11-27", "time": "", "home": "Stillorgan-Rathfarnham", "away": "Greystones RFC", "score": "", "venue": "TBC", "note": ""},
+        {"date": "2026-11-29", "time": "11:00", "home": "Stillorgan-Rathfarnham", "away": "Greystones RFC", "score": "", "venue": "Monkstown", "note": "Park Avenue"},
         {"date": "2026-12-04", "time": "", "home": "Birr", "away": "Malahide RFC", "score": "", "venue": "Birr", "note": ""},
         {"date": "2026-12-04", "time": "", "home": "Stillorgan-Rathfarnham", "away": "De La Salle Palmerston", "score": "", "venue": "TBC", "note": ""}
       ],
       "table": [
-        {"team": "Greystones RFC", "p": 5, "w": 5, "d": 0, "l": 0, "pts": 20},
-        {"team": "Newbridge", "p": 4, "w": 4, "d": 0, "l": 0, "pts": 16},
-        {"team": "Westmanstown", "p": 5, "w": 3, "d": 0, "l": 2, "pts": 12},
+        {"team": "Greystones RFC", "p": 6, "w": 6, "d": 0, "l": 0, "pts": 24},
+        {"team": "Newbridge", "p": 5, "w": 4, "d": 0, "l": 1, "pts": 16},
+        {"team": "Westmanstown", "p": 6, "w": 3, "d": 0, "l": 3, "pts": 12},
         {"team": "De La Salle Palmerston", "p": 3, "w": 2, "d": 0, "l": 1, "pts": 8},
-        {"team": "Stillorgan-Rathfarnham", "p": 4, "w": 1, "d": 0, "l": 3, "pts": 4},
+        {"team": "Malahide RFC", "p": 5, "w": 2, "d": 0, "l": 3, "pts": 8},
+        {"team": "Stillorgan-Rathfarnham", "p": 5, "w": 1, "d": 0, "l": 4, "pts": 5},
         {"team": "Blackrock College RFC", "p": 5, "w": 1, "d": 0, "l": 4, "pts": 4},
-        {"team": "Malahide RFC", "p": 4, "w": 1, "d": 0, "l": 3, "pts": 4},
-        {"team": "Birr", "p": 4, "w": 0, "d": 0, "l": 4, "pts": 0}
+        {"team": "Birr", "p": 5, "w": 1, "d": 0, "l": 4, "pts": 4}
       ]
     }
   }
