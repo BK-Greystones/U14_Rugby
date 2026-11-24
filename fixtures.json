@@ -1,7 +1,7 @@
 {
   "club": "Greystones RFC",
   "highlight": "Greystones",
-  "updatedAt": "2026-11-23T21:43:39.883Z",
+  "updatedAt": "2026-11-24T21:49:17.860Z",
   "teams": {
     "kb": {
       "name": "Killer Bees",
@@ -45,7 +45,7 @@
       "name": "The Avengers",
       "competition": "Leinster School Youth Boys U14 Grading Grp2",
       "leagueUrl": "https://leinsterrugby.sportlomo.com/league/220425/?user_id=8037",
-      "asOf": "23 Nov 2026",
+      "asOf": "24 Nov 2026",
       "fixtures": [
         {"date": "2026-10-11", "time": "11:00", "home": "Westmanstown", "away": "Newbridge", "score": "29-42", "venue": "Westmanstown", "note": ""},
         {"date": "2026-10-11", "time": "12:00", "home": "Malahide RFC", "away": "Stillorgan-Rathfarnham", "score": "", "venue": "Malahide", "note": "Conceded by Stillorgan-Rathfarnham"},
@@ -65,7 +65,7 @@
         {"date": "2026-11-15", "time": "12:00", "home": "Greystones RFC", "away": "Westmanstown", "score": "35-5", "venue": "Greystones", "note": ""},
         {"date": "2026-11-15", "time": "12:00", "home": "Newbridge", "away": "Birr", "score": "30-0", "venue": "Newbridge", "note": ""},
         {"date": "2026-11-20", "time": "", "home": "Greystones RFC", "away": "Newbridge", "score": "19-10", "venue": "Greystones", "note": ""},
-        {"date": "2026-11-22", "time": "10:30", "home": "Malahide RFC", "away": "Westmanstown", "score": "29-12", "venue": "Malahide", "note": ""},
+        {"date": "2026-11-22", "time": "10:30", "home": "Malahide RFC", "away": "Westmanstown", "score": "12-29", "venue": "Malahide", "note": ""},
         {"date": "2026-11-22", "time": "12:15", "home": "De La Salle Palmerston", "away": "Blackrock College RFC", "score": "", "venue": "DLSP", "note": ""},
         {"date": "2026-11-22", "time": "12:30", "home": "Stillorgan-Rathfarnham", "away": "Birr", "score": "29-34", "venue": "Heavey Technology Park", "note": ""},
         {"date": "2026-11-27", "time": "", "home": "Blackrock College RFC", "away": "Birr", "score": "", "venue": "Blackrock", "note": ""},
@@ -78,11 +78,11 @@
       "table": [
         {"team": "Greystones RFC", "p": 6, "w": 6, "d": 0, "l": 0, "pts": 24},
         {"team": "Newbridge", "p": 5, "w": 4, "d": 0, "l": 1, "pts": 16},
-        {"team": "Westmanstown", "p": 6, "w": 3, "d": 0, "l": 3, "pts": 12},
+        {"team": "Westmanstown", "p": 6, "w": 4, "d": 0, "l": 2, "pts": 16},
         {"team": "De La Salle Palmerston", "p": 3, "w": 2, "d": 0, "l": 1, "pts": 8},
-        {"team": "Malahide RFC", "p": 5, "w": 2, "d": 0, "l": 3, "pts": 8},
         {"team": "Stillorgan-Rathfarnham", "p": 5, "w": 1, "d": 0, "l": 4, "pts": 5},
         {"team": "Blackrock College RFC", "p": 5, "w": 1, "d": 0, "l": 4, "pts": 4},
+        {"team": "Malahide RFC", "p": 5, "w": 1, "d": 0, "l": 4, "pts": 4},
         {"team": "Birr", "p": 5, "w": 1, "d": 0, "l": 4, "pts": 4}
       ]
     }
