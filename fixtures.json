@@ -1,7 +1,7 @@
 {
   "club": "Greystones RFC",
   "highlight": "Greystones",
-  "updatedAt": "2026-11-24T21:49:17.860Z",
+  "updatedAt": "2026-11-25T21:49:38.789Z",
   "teams": {
     "kb": {
       "name": "Killer Bees",
@@ -45,7 +45,7 @@
       "name": "The Avengers",
       "competition": "Leinster School Youth Boys U14 Grading Grp2",
       "leagueUrl": "https://leinsterrugby.sportlomo.com/league/220425/?user_id=8037",
-      "asOf": "24 Nov 2026",
+      "asOf": "25 Nov 2026",
       "fixtures": [
         {"date": "2026-10-11", "time": "11:00", "home": "Westmanstown", "away": "Newbridge", "score": "29-42", "venue": "Westmanstown", "note": ""},
         {"date": "2026-10-11", "time": "12:00", "home": "Malahide RFC", "away": "Stillorgan-Rathfarnham", "score": "", "venue": "Malahide", "note": "Conceded by Stillorgan-Rathfarnham"},
@@ -68,10 +68,10 @@
         {"date": "2026-11-22", "time": "10:30", "home": "Malahide RFC", "away": "Westmanstown", "score": "12-29", "venue": "Malahide", "note": ""},
         {"date": "2026-11-22", "time": "12:15", "home": "De La Salle Palmerston", "away": "Blackrock College RFC", "score": "", "venue": "DLSP", "note": ""},
         {"date": "2026-11-22", "time": "12:30", "home": "Stillorgan-Rathfarnham", "away": "Birr", "score": "29-34", "venue": "Heavey Technology Park", "note": ""},
-        {"date": "2026-11-27", "time": "", "home": "Blackrock College RFC", "away": "Birr", "score": "", "venue": "Blackrock", "note": ""},
         {"date": "2026-11-27", "time": "", "home": "De La Salle Palmerston", "away": "Westmanstown", "score": "", "venue": "DLSP", "note": ""},
-        {"date": "2026-11-27", "time": "", "home": "Malahide RFC", "away": "Newbridge", "score": "", "venue": "Malahide", "note": ""},
         {"date": "2026-11-29", "time": "11:00", "home": "Stillorgan-Rathfarnham", "away": "Greystones RFC", "score": "", "venue": "Monkstown", "note": "Park Avenue"},
+        {"date": "2026-11-29", "time": "11:30", "home": "Blackrock College RFC", "away": "Birr", "score": "", "venue": "Blackrock", "note": "Willow Park 4G"},
+        {"date": "2026-11-29", "time": "12:00", "home": "Malahide RFC", "away": "Newbridge", "score": "", "venue": "Malahide", "note": ""},
         {"date": "2026-12-04", "time": "", "home": "Birr", "away": "Malahide RFC", "score": "", "venue": "Birr", "note": ""},
         {"date": "2026-12-04", "time": "", "home": "Stillorgan-Rathfarnham", "away": "De La Salle Palmerston", "score": "", "venue": "TBC", "note": ""}
       ],
