@@ -1,13 +1,13 @@
 {
   "club": "Greystones RFC",
   "highlight": "Greystones",
-  "updatedAt": "2026-11-25T21:49:38.789Z",
+  "updatedAt": "2026-11-27T21:48:02.960Z",
   "teams": {
     "kb": {
       "name": "Killer Bees",
       "competition": "Leinster School Youth Boys U14 Grading Grp4",
       "leagueUrl": "https://leinsterrugby.sportlomo.com/league/220427/?user_id=8037",
-      "asOf": "23 Nov 2026",
+      "asOf": "27 Nov 2026",
       "fixtures": [
         {"date": "2026-10-11", "time": "11:00", "home": "Lansdowne FC", "away": "Coolmine", "score": "40-21", "venue": "Lansdowne", "note": ""},
         {"date": "2026-10-11", "time": "12:00", "home": "Greystones RFC", "away": "Monkstown FC", "score": "", "venue": "Greystones", "note": "Conceded by Monkstown FC"},
@@ -28,8 +28,8 @@
         {"date": "2026-11-22", "time": "10:00", "home": "Coolmine", "away": "St. Mary’s College RFC", "score": "19-47", "venue": "Coolmine", "note": ""},
         {"date": "2026-11-22", "time": "12:00", "home": "North Meath", "away": "Skerries RFC", "score": "14-40", "venue": "North Meath", "note": ""},
         {"date": "2026-11-27", "time": "", "home": "St. Mary’s College RFC", "away": "Monkstown FC", "score": "", "venue": "St Marys", "note": "Conceded by Monkstown FC"},
-        {"date": "2026-11-27", "time": "", "home": "Greystones RFC", "away": "Coolmine", "score": "", "venue": "Greystones", "note": ""},
-        {"date": "2026-11-29", "time": "11:00", "home": "Lansdowne FC", "away": "North Meath", "score": "", "venue": "Lansdowne", "note": ""}
+        {"date": "2026-11-29", "time": "11:00", "home": "Lansdowne FC", "away": "North Meath", "score": "", "venue": "Lansdowne", "note": ""},
+        {"date": "2026-11-29", "time": "12:00", "home": "Greystones RFC", "away": "Coolmine", "score": "", "venue": "Greystones", "note": ""}
       ],
       "table": [
         {"team": "St. Mary’s College RFC", "p": 6, "w": 5, "d": 0, "l": 1, "pts": 20},
